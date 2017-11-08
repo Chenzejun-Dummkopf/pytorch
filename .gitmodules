@@ -7,3 +7,6 @@
 [submodule "torch/lib/nanopb"]
 	path = torch/lib/nanopb
 	url = https://github.com/nanopb/nanopb.git
+[submodule "torch/lib/mkl-dnn"]
+	path = torch/lib/mkl-dnn
+	url = https://github.com/01org/mkl-dnn
