@@ -327,7 +327,7 @@ void THBlas_(gemm)(char transa, char transb, int64_t m, int64_t n, int64_t k, re
   if( (m <= INT_MAX) && (n <= INT_MAX) && (k <= INT_MAX) &&
       (lda >= THMax(1, (transa_ ? k : m))) && (lda <= INT_MAX) &&
       (ldb >= THMax(1, (transb_ ? n : k))) && (ldb <= INT_MAX) &&
-      (ldc >= THMax(1, n)) && (ldc <= INT_MAX) )
+      (ldc >= THMax(1, m)) && (ldc <= INT_MAX) )
   {
     int i_m = (int)m;
     int i_n = (int)n;
