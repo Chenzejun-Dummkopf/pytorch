@@ -127,6 +127,27 @@ function build_nccl() {
    cd ../..
 }
 
+function build_mkldnn() {
+    if [[ -d ./mkl-dnn/external ]]; then
+      local lib=`ls ./mkl-dnn/external/mklml_lnx_*.tgz`
+      echo " -- $lib already exists, skip downloading..."
+    else
+      echo " -- Start download Intel(R) MKL small libraries..."
+      cd ./mkl-dnn/scripts && ./prepare_mkl.sh && cd ../..
+    fi
+    mkdir -p build/mkl-dnn
+    cd build/mkl-dnn
+    cmake ../../mkl-dnn -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
+    make -j 8 install
+    [ -d "${INSTALL_DIR}/include/mkldnn" ] || mkdir -p ${INSTALL_DIR}/include/mkldnn
+    for header in "mkldnn.h" "mkldnn.hpp" "mkldnn_types.h"; do
+      if [ -e "${INSTALL_DIR}/include/${header}" ]; then
+        mv ${INSTALL_DIR}/include/${header} ${INSTALL_DIR}/include/mkldnn/
+      fi
+    done
+    cd ../..
+ }
+
 # In the torch/lib directory, create an installation directory
 mkdir -p tmp_install
 
@@ -136,6 +157,8 @@ for arg in "$@"; do
         build_nccl
     elif [[ "$arg" == "gloo" ]]; then
         build gloo $GLOO_FLAGS
+    elif [[ "$arg" == "mkldnn" ]]; then
+        build_mkldnn
     else
         build $arg
     fi

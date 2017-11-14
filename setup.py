@@ -17,6 +17,7 @@ from tools.setup_helpers.cuda import WITH_CUDA, CUDA_HOME, CUDA_VERSION
 from tools.setup_helpers.cudnn import WITH_CUDNN, CUDNN_LIB_DIR, CUDNN_INCLUDE_DIR
 from tools.setup_helpers.nccl import WITH_NCCL, WITH_SYSTEM_NCCL, NCCL_LIB_DIR, \
     NCCL_INCLUDE_DIR, NCCL_ROOT_DIR, NCCL_SYSTEM_LIB
+from tools.setup_helpers.mkldnn import WITH_MKLDNN
 from tools.setup_helpers.nnpack import WITH_NNPACK, NNPACK_LIB_PATHS, \
     NNPACK_INCLUDE_DIRS
 from tools.setup_helpers.split_types import split_types
@@ -82,7 +83,7 @@ distutils.unixccompiler.UnixCCompiler.link = patched_link
 
 dep_libs = [
     'TH', 'THS', 'THNN', 'THC', 'THCS', 'THCUNN', 'nccl', 'libshm',
-    'ATen', 'gloo', 'THD', 'nanopb',
+    'ATen', 'gloo', 'THD', 'nanopb', 'mkldnn',
 ]
 
 
@@ -126,6 +127,8 @@ class build_deps(Command):
             if sys.platform.startswith('linux'):
                 libs += ['gloo']
             libs += ['THD']
+        if WITH_MKLDNN:
+            libs += ['mkldnn']
         build_libs(libs)
 
 
@@ -229,6 +232,10 @@ class build_ext(setuptools.command.build_ext.build_ext):
         else:
             print('-- Building without distributed package')
 
+        if WITH_MKLDNN:
+            print('-- Building with MKL-DNN package')
+        else:
+            print('-- Building without MKL-DNN package')
         # Do we actually need this here?
         if WITH_NNPACK:
             nnpack_dir = NNPACK_LIB_PATHS[0]
