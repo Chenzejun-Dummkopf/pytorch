@@ -18,11 +18,15 @@ extern THCState* state;
 using namespace torch::cudnn;
 #endif
 
+#ifdef WITH_MKLDNN
+#include "torch/csrc/mkldnn/Conv.h"
+using namespace torch::mkldnn;
+#endif
+
 #ifdef WITH_NNPACK
 #include "torch/csrc/nnpack/NNPACK.h"
 #endif
 
-using torch::cudnn::Convolution;
 using at::Tensor;
 using tensor_pair = std::pair<at::Tensor, at::Tensor>;
 

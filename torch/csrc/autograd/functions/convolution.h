@@ -13,10 +13,16 @@
 
 #ifdef WITH_CUDNN
 #include "torch/csrc/cudnn/Conv.h"
+using torch::cudnn::Convolution;
 #else
-namespace torch { namespace cudnn {
 struct Convolution {};
-}}
+#endif
+
+#ifdef WITH_MKLDNN
+#include "torch/csrc/mkldnn/Conv.h"
+using torch::mkldnn::Context;
+#else
+struct Context {};
 #endif
 
 namespace torch { namespace autograd {
@@ -63,7 +69,7 @@ struct ConvBackward : public Function, public ConvParams {
       Variable bias,
       tensor_list columns,
       tensor_list ones,
-      std::unique_ptr<torch::cudnn::Convolution> convolution)
+      std::unique_ptr<Convolution> convolution)
     : Function(std::move(flags))
     , ConvParams(std::move(params))
     , convolution(std::move(convolution)) {
@@ -87,7 +93,7 @@ struct ConvBackward : public Function, public ConvParams {
   SavedVariable bias_;
   tensor_list columns;
   tensor_list ones;
-  std::unique_ptr<torch::cudnn::Convolution> convolution;
+  std::unique_ptr<Convolution> convolution;
 };
 
 struct ConvBackwardBackward : public Function, public ConvParams {

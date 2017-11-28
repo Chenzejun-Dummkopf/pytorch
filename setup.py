@@ -528,6 +528,15 @@ if WITH_CUDNN:
     ]
     extra_compile_args += ['-DWITH_CUDNN']
 
+if WITH_MKLDNN:
+    main_libraries += ['mkldnn']
+    include_dirs += [tmp_install_path + "/include/mkldnn"]
+    main_sources += [
+        "torch/csrc/mkldnn/Conv.cpp",
+        "torch/csrc/mkldnn/Runtime.cpp",
+    ]
+    extra_compile_args += ['-DWITH_MKLDNN']
+
 if WITH_NNPACK:
     include_dirs.extend(NNPACK_INCLUDE_DIRS)
     main_link_args.extend(NNPACK_LIB_PATHS)
