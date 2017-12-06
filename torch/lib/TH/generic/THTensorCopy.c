@@ -9,7 +9,7 @@
 #endif
 
 #ifdef _OPENMP
-#define TH_OMP_OVERHEAD_THRESHOLD_COPY 5000
+#define TH_OMP_OVERHEAD_THRESHOLD_COPY 20000
 #include <omp.h>
 #endif
 
