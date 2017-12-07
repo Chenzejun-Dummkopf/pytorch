@@ -119,6 +119,25 @@ auto ConvParams::use_cudnn(const at::Tensor& input) const -> bool {
   return false;
 }
 
+auto ConvParams::use_mkldnn(const at::Tensor& input) const -> bool {
+#ifdef WITH_MKLDNN
+  if (input.type().ID() != at::TypeID::CPUFloat) {
+    // mkldnn only supports CPU Float tensor
+    return false;
+  }
+  if (is_dilated() || transposed || groups != 1) {
+    // TODO: add dilation support
+    // add transposed support
+    // add group support
+    return false;
+  }
+  // mkldnn only supports 2d convolution
+  return input.ndimension() == 4;
+
+#endif
+  return false;
+}
+
 auto ConvParams::use_nnpack(const at::Tensor& input) const -> bool {
 #ifdef WITH_NNPACK
   return input.type().ID() == at::TypeID::CPUFloat && // only on CPU Float Tensors
@@ -291,6 +310,7 @@ auto ConvForward::apply(const variable_list& inputs) -> variable_list {
   tensor_list columns(groups);
   tensor_list ones(groups);
   std::unique_ptr<Convolution> convolution;
+  std::unique_ptr<Context> context;
 
   if (is_depthwise(input, weight, groups)) {
       /* output.resize_(output_size(input, weight)); */
@@ -330,6 +350,23 @@ auto ConvForward::apply(const variable_list& inputs) -> variable_list {
           padding, stride, dilation, groups, benchmark, deterministic));
     }
 #endif
+  } else if (use_mkldnn(input)) {
+#ifdef WITH_MKLDNN
+    if (input.type().ID() != weight.type().ID()){
+      std::stringstream ss;
+      ss << "Input type (" << input.toString() << ") and weight type (" << weight.toString() << ") should be the same";
+      throw std::runtime_error(ss.str());
+    }
+    if (bias.defined() && input.type().ID() != bias.type().ID()){
+      std::stringstream ss;
+      ss << "Input type (" << input.toString() << ") and bias type (" << bias.toString() << ") should be the same";
+      throw std::runtime_error(ss.str());
+    }
+
+    output = input.type().tensor();
+    output.resize_(output_size(input, weight));
+    context.reset(mkldnn_convolution_forward(input, output, weight, bias, padding, stride));
+#endif
   } else {
     for (int g = 0; g < groups; ++g) {
       columns[g] = input.type().tensor();
@@ -362,7 +399,7 @@ auto ConvForward::apply(const variable_list& inputs) -> variable_list {
     return std::make_shared<ConvBackward>(
         f, *this,
         inputs[0], inputs[1], inputs[2],
-        std::move(columns), std::move(ones), std::move(convolution));
+        std::move(columns), std::move(ones), std::move(convolution), std::move(context));
   });
 };
 
@@ -404,6 +441,7 @@ auto ConvBackward::apply(const variable_list& grad_outputs) -> variable_list {
 
   bool use_depthwise = this->is_depthwise(input, weight, groups);
   bool use_cudnn = this->use_cudnn(input);
+  bool use_mkldnn = this->use_mkldnn(input);
 
   at::Tensor grad_input;
   at::Tensor grad_weight;
@@ -466,6 +504,23 @@ auto ConvBackward::apply(const variable_list& grad_outputs) -> variable_list {
             (THVoidTensor*)grad_output.unsafeGetTH(false), (THVoidTensor*)grad_bias.unsafeGetTH(false),
             convolution.get());
       }
+    }
+#endif
+  } else if (use_mkldnn) {
+#ifdef WITH_MKLDNN
+    if (output_mask[0]) {
+      grad_input = input.type().tensor();
+      grad_input.resize_as_(input);
+      mkldnn_convolution_backward_data(grad_output, weight, grad_input, context.get());
+    }
+    if (output_mask[1] || output_mask[2]) {
+      grad_weight = weight.type().tensor();
+      grad_weight.resize_as_(weight);
+      if (output_mask[2]) {
+        grad_bias = bias.type().tensor();
+        grad_bias.resize_as_(bias);
+      }
+      mkldnn_convolution_backward_weight(input, grad_output, grad_weight, grad_bias, context.get());
     }
 #endif
   } else if (groups == 1) {

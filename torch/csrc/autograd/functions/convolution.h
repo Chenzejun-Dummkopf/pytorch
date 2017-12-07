@@ -46,6 +46,7 @@ struct ConvParams {
   bool is_padding_neg() const;
   void view1d_as_2d();
   bool use_cudnn(const at::Tensor& input) const;
+  bool use_mkldnn(const at::Tensor& input) const;
   bool use_nnpack(const at::Tensor& input) const;
   bool is_depthwise(const at::Tensor& input, const at::Tensor& weight, int groups) const;
 };
@@ -69,10 +70,12 @@ struct ConvBackward : public Function, public ConvParams {
       Variable bias,
       tensor_list columns,
       tensor_list ones,
-      std::unique_ptr<Convolution> convolution)
+      std::unique_ptr<Convolution> convolution,
+      std::unique_ptr<Context> context)
     : Function(std::move(flags))
     , ConvParams(std::move(params))
-    , convolution(std::move(convolution)) {
+    , convolution(std::move(convolution))
+    , context(std::move(context)) {
       if (is_executable) {
         this->input_ = SavedVariable(input, this);
         this->weight_ = SavedVariable(weight, this);
@@ -94,6 +97,7 @@ struct ConvBackward : public Function, public ConvParams {
   tensor_list columns;
   tensor_list ones;
   std::unique_ptr<Convolution> convolution;
+  std::unique_ptr<Context> context;
 };
 
 struct ConvBackwardBackward : public Function, public ConvParams {

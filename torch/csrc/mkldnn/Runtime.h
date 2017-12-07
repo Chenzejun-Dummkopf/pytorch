@@ -4,13 +4,12 @@
 #include <mkldnn.hpp>
 #include <ATen/ATen.h>
 
-#define MKLDNN_DEBUG
-
 using namespace mkldnn;
 
 namespace torch { namespace mkldnn {
 
 #ifdef MKLDNN_DEBUG
+void print_tensor(at::Tensor& tensor, int n, std::string s);
 void tensor_compare(at::Tensor& left, at::Tensor& right, std::string s);
 #endif
 

@@ -5,6 +5,15 @@ using namespace mkldnn;
 namespace torch { namespace mkldnn {
 
 #ifdef MKLDNN_DEBUG
+void print_tensor(at::Tensor& tensor, int n, std::string s) {
+  std::cout << s << "\t";
+  auto tensor_p = (float*)tensor.data_ptr();
+  for (int i = 0; i < n; i++) {
+      std::cout << tensor_p[i] << " ";
+  }
+  std::cout << std::endl;
+}
+
 void tensor_compare(at::Tensor& left, at::Tensor& right, std::string s) {
   float* left_p = (float*)left.data_ptr();
   float* right_p = (float*)right.data_ptr();
@@ -16,8 +25,7 @@ void tensor_compare(at::Tensor& left, at::Tensor& right, std::string s) {
     sum_r += right_p[i];
   }
 
-  std::cout << s << " accumulated error " << (sum_l - sum_r) / sum_l * 100000
-     << "*e-5" << std::endl;
+  std::cout << s << " accumulated error " << (sum_l - sum_r) / sum_r << std::endl;
 }
 #endif
 
