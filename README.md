@@ -2,6 +2,8 @@
 
 --------------------------------------------------------------------------------
 
+This repository is a prototype design of CPU performance optimization on PyTorch.
+
 PyTorch is a Python package that provides two high-level features:
 - Tensor computation (like NumPy) with strong GPU acceleration
 - Deep neural networks built on a tape-based autograd system
@@ -183,7 +185,7 @@ conda install numpy pyyaml setuptools cmake cffi
 ```
 #### Get the PyTorch source
 ```bash
-git clone --recursive https://github.com/pytorch/pytorch
+git clone --recursive https://github.com/intel/pytorch
 ```
 
 #### Install PyTorch
@@ -191,6 +193,7 @@ On Linux
 ```bash
 python setup.py install
 ```
+[Intel MKL-DNN](https://github.com/01org/mkl-dnn) will be automatically downloaded and compiled
 
 On OSX
 ```bash
