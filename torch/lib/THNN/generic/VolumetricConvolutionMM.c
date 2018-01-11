@@ -204,7 +204,7 @@ static void THNN_(unfolded_acc_vol)(
       }
     }
   }
- 
+
 }
 
 static void THNN_(unfolded_copy_vol)(
@@ -244,8 +244,7 @@ static void THNN_(unfolded_copy_vol)(
     long kh = remained % kH;
     remained = remained / kH;
     long kt = remained % kT;
-    long nip = remained / kT; 
-   
+    long nip = remained / kT;
 
     long dstkwStride = outputDepth*outputHeight*outputWidth;
     long dstkhStride = kW*dstkwStride;
