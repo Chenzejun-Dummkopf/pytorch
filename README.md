@@ -3,6 +3,7 @@
 --------------------------------------------------------------------------------
 
 This repository is a prototype design of CPU performance optimization on PyTorch.
+Performance has been optimized for Conv2d, Conv3d, LSTM and further optimization is still in progress.
 
 PyTorch is a Python package that provides two high-level features:
 - Tensor computation (like NumPy) with strong GPU acceleration
