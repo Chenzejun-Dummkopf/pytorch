@@ -17,7 +17,7 @@ from tools.setup_helpers.cuda import WITH_CUDA, CUDA_HOME, CUDA_VERSION
 from tools.setup_helpers.cudnn import WITH_CUDNN, CUDNN_LIB_DIR, CUDNN_INCLUDE_DIR
 from tools.setup_helpers.nccl import WITH_NCCL, WITH_SYSTEM_NCCL, NCCL_LIB_DIR, \
     NCCL_INCLUDE_DIR, NCCL_ROOT_DIR, NCCL_SYSTEM_LIB
-from tools.setup_helpers.mkldnn import WITH_MKLDNN
+from tools.setup_helpers.mkldnn import WITH_MKLDNN, WITH_AVX512
 from tools.setup_helpers.nnpack import WITH_NNPACK, NNPACK_LIB_PATHS, \
     NNPACK_INCLUDE_DIRS
 from tools.setup_helpers.split_types import split_types
