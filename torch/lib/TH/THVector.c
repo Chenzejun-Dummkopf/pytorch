@@ -23,6 +23,10 @@
 #include "vector/AVX2.h"
 #endif
 
+#if defined(WITH_AVX512)
+#include "vector/AVX512.h"
+#endif
+
 #include "generic/THVectorDefault.c"
 #include "THGenerateAllTypes.h"
 

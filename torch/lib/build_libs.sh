@@ -15,6 +15,12 @@ if [[ "$1" == "--with-cuda" ]]; then
   shift
 fi
 
+WITH_AVX512=0
+if [[ "$1" == "--with-avx512" ]]; then
+  WITH_AVX512=1
+  shift
+fi
+
 cd "$(dirname "$0")/../.."
 BASE_DIR=$(pwd)
 cd torch/lib
@@ -88,6 +94,7 @@ function build() {
               -DTHCUNN_SO_VERSION=1 \
               -DTHD_SO_VERSION=1 \
               -DNO_CUDA=$((1-$WITH_CUDA)) \
+              -DWITH_AVX512=$WITH_AVX512 \
               -DNCCL_EXTERNAL=1 \
               -Dnanopb_BUILD_GENERATOR=0 \
               -DCMAKE_DEBUG_POSTFIX="" \
