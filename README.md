@@ -194,7 +194,12 @@ On Linux
 ```bash
 python setup.py install
 ```
-[Intel MKL-DNN](https://github.com/01org/mkl-dnn) will be automatically downloaded and compiled
+[Intel MKL-DNN](https://github.com/01org/mkl-dnn) will be automatically downloaded and compiled.  
+
+Intel-PyTorch team also provide a script to simply the installation with MKL-DNN and Intel compilers.  
+```bash
+./install.sh
+```
 
 On OSX
 ```bash
