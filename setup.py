@@ -538,7 +538,7 @@ if WITH_MKLDNN:
         "torch/csrc/mkldnn/Conv.cpp",
         "torch/csrc/mkldnn/Runtime.cpp",
     ]
-    extra_compile_args += ['-DWITH_MKLDNN']
+    extra_compile_args += ['-DWITH_MKLDNN', '-mkl']
 
 if WITH_NNPACK:
     include_dirs.extend(NNPACK_INCLUDE_DIRS)
