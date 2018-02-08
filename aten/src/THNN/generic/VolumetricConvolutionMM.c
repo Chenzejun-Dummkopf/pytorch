@@ -134,22 +134,22 @@ static void THNN_(unfolded_acc_vol)(
           int pT,
           int pW,
           int pH,
-          long nInputPlane,
-          long inputDepth,
-          long inputWidth,
-          long inputHeight,
-          long outputDepth,
-          long outputWidth,
-          long outputHeight)
+          int64_t nInputPlane,
+          int64_t inputDepth,
+          int64_t inputWidth,
+          int64_t inputHeight,
+          int64_t outputDepth,
+          int64_t outputWidth,
+          int64_t outputHeight)
 {
-  long nip;
+  int64_t nip;
   real *input_data = THTensor_(data)(input);
   real *finput_data = THTensor_(data)(finput);
 
 //#pragma omp parallel for private(nip)
   for (nip = 0; nip < nInputPlane; nip++)
   {
-    long kt, kw, kh, t, y, x, it, ix, iy;
+    int64_t kt, kw, kh, t, y, x, it, ix, iy;
     for (kt = 0; kt < kT; kt++)
     {
       for (kh = 0; kh < kH; kh++)
@@ -221,13 +221,13 @@ static void THNN_(unfolded_copy_vol)(
           int pT,
           int pW,
           int pH,
-          long nInputPlane,
-          long inputDepth,
-          long inputWidth,
-          long inputHeight,
-          long outputDepth,
-          long outputWidth,
-          long outputHeight)
+          int64_t nInputPlane,
+          int64_t inputDepth,
+          int64_t inputWidth,
+          int64_t inputHeight,
+          int64_t outputDepth,
+          int64_t outputWidth,
+          int64_t outputHeight)
 {
   int64_t k;
   real *input_data = THTensor_(data)(input);
@@ -235,13 +235,13 @@ static void THNN_(unfolded_copy_vol)(
 // #pragma omp parallel for private(k)
   for (k = 0; k < nInputPlane*kT*kH*kW; k++)
   {
-    long nip = k / (kT*kH*kW);
-    long rest = k % (kT*kH*kW);
-    long kt = rest / (kH*kW);
+    int64_t nip = k / (kT*kH*kW);
+    int64_t rest = k % (kT*kH*kW);
+    int64_t kt = rest / (kH*kW);
     rest = rest % (kH*kW);
-    long kh = rest / kW;
-    long kw = rest % kW;
-    long t,x,y,it,ix,iy;
+    int64_t kh = rest / kW;
+    int64_t kw = rest % kW;
+    int64_t t,x,y,it,ix,iy;
     real *dst = finput_data
       + nip * (kT*kH*kW*outputDepth*outputHeight*outputWidth)
       + kt  * (kH*kW*outputDepth*outputHeight*outputWidth)

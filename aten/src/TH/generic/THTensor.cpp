@@ -751,6 +751,16 @@ int THTensor_(isSetTo)(const THTensor *self, const THTensor* src)
   return 0;
 }
 
+int THTensor_(hasZeroStride)(const THTensor *self)
+{
+  for(int d = self->nDimension-1; d >= 0; d--)
+  {
+    if(0 == self->stride[d])
+      return 1;
+  }
+  return 0;
+}
+
 ptrdiff_t THTensor_(nElement)(const THTensor *self)
 {
   if(self->nDimension == 0)
