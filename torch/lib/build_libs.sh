@@ -57,6 +57,8 @@ $BASE_DIR/torch/lib/THNN/generic/THNN.h;\
 $BASE_DIR/torch/lib/THCUNN/generic/THCUNN.h;\
 $BASE_DIR/torch/lib/ATen/nn.yaml"
 
+MKL_FLAGS="-mkl -Wl,-ydgemm_"
+
 # Used to build an individual library, e.g. build TH
 function build() {
   # We create a build directory for the library, which will
@@ -72,8 +74,8 @@ function build() {
   ${CMAKE_VERSION} ../../$1 -DCMAKE_MODULE_PATH="$BASE_DIR/cmake/FindCUDA" \
               -DTorch_FOUND="1" \
               -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
-              -DCMAKE_C_FLAGS="$BUILD_C_FLAGS" \
-              -DCMAKE_CXX_FLAGS="$BUILD_C_FLAGS $CPP_FLAGS" \
+              -DCMAKE_C_FLAGS="$BUILD_C_FLAGS $MKL_FLAGS" \
+              -DCMAKE_CXX_FLAGS="$BUILD_C_FLAGS $CPP_FLAGS $MKL_FLAGS" \
               -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
               -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
               -DCMAKE_INSTALL_LIBDIR="$INSTALL_DIR/lib" \
