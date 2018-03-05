@@ -189,6 +189,7 @@ conda install numpy pyyaml setuptools cmake cffi typing
 #### Get the PyTorch source
 ```bash
 git clone --recursive https://github.com/pytorch/pytorch
+cd pytorch
 ```
 
 #### Install PyTorch
