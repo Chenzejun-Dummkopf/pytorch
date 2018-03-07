@@ -2,6 +2,8 @@
 #define TH_GENERIC_FILE "generic/THTensorMath.c"
 #else
 
+#include <stdio.h>
+
 #ifndef NAN
   #define NAN (nan(NULL))
 #endif
@@ -19,7 +21,6 @@
 #else
 #define PRAGMA(P) __pragma(P)
 #endif
-
 #define TH_TENSOR_APPLY_CONTIG(TYPE, TENSOR, CODE) \
 { \
   ptrdiff_t TH_TENSOR_size = THTensor_(nElement)(TENSOR); \
@@ -101,10 +102,31 @@
 }
 #endif
 
+#define TH_TENSOR_APPLY_CONTIG_SERAIL(TYPE, TENSOR, CODE) \
+{ \
+  TYPE *TENSOR##_data = THTensor_(data)(TENSOR); \
+  ptrdiff_t TENSOR##_len = THTensor_(nElement)(TENSOR); \
+  CODE \
+}
+
+#define TH_TENSOR_APPLY3_CONTIG_SERIAL(TYPE1, TENSOR1, TYPE2, TENSOR2, TYPE3, TENSOR3, CODE) \
+{ \
+  TYPE1 *TENSOR1##_data = THTensor_(data)(TENSOR1); \
+  TYPE2 *TENSOR2##_data = THTensor_(data)(TENSOR2); \
+  TYPE3 *TENSOR3##_data = THTensor_(data)(TENSOR3); \
+  ptrdiff_t TENSOR1##_len = THTensor_(nElement)(TENSOR1); \
+  CODE \
+}
+
 void THTensor_(fill)(THTensor *r_, real value)
 {
+  ptrdiff_t r_len = THTensor_(nElement)(r_);
   if (THTensor_(isContiguous)(r_) || THTensor_(isTransposed)(r_)) {
-    TH_TENSOR_APPLY_CONTIG(real, r_, THVector_(fill)(r__data, value, r__len););
+    if(r_len > 10000) {
+      TH_TENSOR_APPLY_CONTIG(real, r_, THVector_(fill)(r__data, value, r__len););
+    } else {
+      TH_TENSOR_APPLY_CONTIG_SERAIL(real, r_, THVector_(fill)(r__data, value, r__len););
+    }
   } else {
     TH_TENSOR_APPLY(real, r_,
       if (r__stride == 1) {
@@ -1208,11 +1230,17 @@ void THTensor_(cadd)(THTensor *r_, THTensor *t, real value, THTensor *src)
   int serial_path = 0;
   if (srcSize == r_Size){
     if (r_Contig && tContig && srcContig) {
-      if(r_ == t) {
+      /*if(r_ == t) {
         THBlas_(axpy)(THTensor_(nElement)(t), value, THTensor_(data)(src), 1, THTensor_(data)(r_), 1);
-      } else {
-        TH_TENSOR_APPLY3_CONTIG(real, r_, real, t, real, src, THVector_(cadd)(r__data, t_data, src_data, value, r__len););
-      }
+        serial_path = 2;
+      } else {*/
+        if (r_Size > 10000) {
+          TH_TENSOR_APPLY3_CONTIG(real, r_, real, t, real, src, THVector_(cadd)(r__data, t_data, src_data, value, r__len););
+        } else {
+          TH_TENSOR_APPLY3_CONTIG_SERIAL(real, r_, real, t, real, src, THVector_(cadd)(r__data, t_data, src_data, value, r__len););
+          serial_path = 1;
+        }
+      //}
     } else {
 #if _OPENMP
       int inOMP = omp_in_parallel();
