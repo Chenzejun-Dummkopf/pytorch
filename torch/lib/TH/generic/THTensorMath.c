@@ -1238,7 +1238,7 @@ void THTensor_(cadd)(THTensor *r_, THTensor *t, real value, THTensor *src)
           TH_TENSOR_APPLY3_CONTIG(real, r_, real, t, real, src, THVector_(cadd)(r__data, t_data, src_data, value, r__len););
         } else {
           TH_TENSOR_APPLY3_CONTIG_SERIAL(real, r_, real, t, real, src, THVector_(cadd)(r__data, t_data, src_data, value, r__len););
-          serial_path = 1;
+          serial_path = 2;
         }
       //}
     } else {
@@ -1256,7 +1256,7 @@ void THTensor_(cadd)(THTensor *r_, THTensor *t, real value, THTensor *src)
   } else {
     serial_path = 1;
   }
-  if (serial_path) {
+  if (1 == serial_path) {
     TH_TENSOR_APPLY3(real, r_, real, t, real, src, *r__data = *t_data + value * *src_data;);
   }
 }
