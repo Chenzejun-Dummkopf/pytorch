@@ -1111,3 +1111,6 @@
 # mkldnn
 - name: mkldnn_convolution(Tensor self, Tensor weight, Tensor bias, IntList padding, IntList stride, IntList dilation)
   self, weight, bias: mkldnn_convolution_backward(self, grad, weight, padding, stride, dilation, grad_input_mask)
+
+- name: mkldnn_batch_norm(Tensor input, Tensor weight, Tensor bias, Tensor running_mean, Tensor running_var, bool training, double momentum, double eps)
+  input, weight, bias: mkldnn_batch_norm_backward(input, grad.contiguous(), weight, bias, running_mean, running_var, result1, result2, eps)

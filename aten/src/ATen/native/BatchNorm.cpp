@@ -19,6 +19,15 @@ namespace {
   }
 }
 
+bool use_mkldnn(const at::Tensor& input) {
+#if AT_MKLDNN_ENABLED()
+  return input.type().backend() == kCPU &&
+         input.type().scalarType() == kFloat && // only on CPU Float Tensors
+         input.ndimension() == 4; // must be in NCHW format
+#endif
+  return false;
+}
+
 Tensor batch_norm(
     const Tensor& input, const Tensor& weight /* optional */, const Tensor& bias /* optional */,
     const Tensor& running_mean /* optional */, const Tensor& running_var /* optional */,
@@ -62,6 +71,14 @@ Tensor batch_norm(
                         training, momentum, eps));
   }
 #endif
+
+#if AT_MKLDNN_ENABLED()
+  if (use_mkldnn(input)) {
+    return std::get<0>(at::mkldnn_batch_norm(input, weight, bias,
+      running_mean, running_var, training, momentum, eps));
+  }
+#endif
+
   return at::thnn_batch_norm(
             input, weight, bias,
             running_mean, running_var, training, momentum, eps);
