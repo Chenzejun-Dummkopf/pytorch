@@ -1,7 +1,6 @@
 #include <ATen/ATen.h>
 #include <ATen/NativeFunctions.h>
 #include <ATen/Config.h>
-#include <mkl.h>
 #if !AT_MKLDNN_ENABLED()
 
 namespace at { namespace native {
@@ -101,11 +100,9 @@ std::tuple<Tensor, Tensor, Tensor> mkldnn_batch_norm(
   std::shared_ptr<memory> mean_memory, variance_memory;
   Tensor save_mean = input.type().tensor();
   Tensor save_var = input.type().tensor();
-  if (training) {
-    save_mean.resize_({ic});
-    save_var.resize_({ic});
-  }
-
+  save_mean.resize_({ic});
+  save_var.resize_({ic});
+ 
   if ( !training ) {
     //test
     if (use_running_stat){
@@ -166,9 +163,11 @@ std::tuple<Tensor, Tensor, Tensor> mkldnn_batch_norm(
     float* running_mean_buf = reinterpret_cast<float *>(running_mean.data_ptr());
     float* running_var_buf = reinterpret_cast<float *>(running_var.data_ptr());
     const float reborn = 1.0f - momentum;
-    cblas_saxpby(ic, (float)momentum, mean_buf, 1, reborn, running_mean_buf, 1);
-    //torch use unbiased variance
-    cblas_saxpby(ic, (float)momentum*len/(len-1), var_buf, 1, reborn, running_var_buf, 1);
+    const float adjust = momentum * len / (len - 1);
+    for (int32_t i=0; i<ic; ++i){
+        running_mean_buf[i] = running_mean_buf[i] * reborn + mean_buf[i] * momentum;
+        running_var_buf[i]  = running_var_buf[i] * reborn + var_buf[i] * adjust;
+    }
   }
   return std::tuple<Tensor, Tensor, Tensor>{output, save_mean, save_var};
 }
@@ -196,6 +195,7 @@ std::tuple<Tensor, Tensor, Tensor> mkldnn_batch_norm_backward(
 
   //always create output for pytorch only allow in-place
   auto grad_input  = input.type().tensor(input.sizes());
+  //TODO what's the type? undefined?
   auto grad_weight = input.type().tensor();
   auto grad_bias = input.type().tensor();
   if (use_weight_bias_) {
@@ -221,8 +221,8 @@ std::tuple<Tensor, Tensor, Tensor> mkldnn_batch_norm_backward(
   bn_forward_pd.reset(new batch_normalization_forward::primitive_desc(*bn_forward_desc, cpu_engine));
 
   //TODO create?? something wrong
-  auto grad_output_pd = bn_forward_pd->dst_primitive_desc();
-  auto grad_output_md = memory::desc(grad_output_pd.desc());
+  //auto grad_output_pd = bn_forward_pd->dst_primitive_desc();
+  auto grad_output_md = input_md;
   std::shared_ptr<batch_normalization_backward::desc> bn_backward_desc;
   std::shared_ptr<batch_normalization_backward::primitive_desc> bn_backward_pd;
   bn_backward_desc.reset(new batch_normalization_backward::desc(prop_kind::backward, input_md, grad_output_md, eps, flags));
@@ -232,10 +232,10 @@ std::tuple<Tensor, Tensor, Tensor> mkldnn_batch_norm_backward(
 
   //set grad output memory
   auto grad_output_memory = grad_output_usr_memory;
-  if (grad_output_memory.get_primitive_desc() != grad_output_pd) {
-    grad_output_memory = memory(grad_output_pd);
-    net.push_back(reorder(grad_output_usr_memory, grad_output_memory));
-  }
+  //if (grad_output_memory.get_primitive_desc() != grad_output_pd) {
+  //  grad_output_memory = memory(grad_output_pd);
+  //  net.push_back(reorder(grad_output_usr_memory, grad_output_memory));
+  //}
 
   //set grad input memory
   auto grad_input_memory = grad_input_usr_memory;
