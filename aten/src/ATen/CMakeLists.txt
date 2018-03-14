@@ -45,35 +45,7 @@ IF(NOT MSVC AND NOT "${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
   SET_SOURCE_FILES_PROPERTIES(${PROJECT_SOURCE_DIR}/src/TH/THAtomic.c PROPERTIES COMPILE_FLAGS "-fno-openmp")
   SET_SOURCE_FILES_PROPERTIES(${PROJECT_SOURCE_DIR}/src/TH/THAllocator.c PROPERTIES COMPILE_FLAGS "-fno-openmp")
 ENDIF()
-
-FILE(GLOB cpu_kernel_h RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "native/cpu/*.h")
-FILE(GLOB cpu_kernel_cpp_in RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "native/cpu/*.cpp")
-
-list(APPEND CPU_CAPABILITY_NAMES "DEFAULT" "AVX" "AVX2")
-IF(MSVC)
-  LIST(APPEND CPU_CAPABILITY_FLAGS "${MSVC_OPT_FLAG}" "${MSVC_OPT_FLAG}/arch:AVX" "${MSVC_OPT_FLAG}/arch:AVX2")
-ELSE(MSVC)
-  LIST(APPEND CPU_CAPABILITY_FLAGS "-O3" "-O3 -mavx" "-O3 -mavx2")
-ENDIF(MSVC)
-
-list(LENGTH CPU_CAPABILITY_NAMES NUM_CPU_CAPABILITY_NAMES)
-math(EXPR NUM_CPU_CAPABILITY_NAMES "${NUM_CPU_CAPABILITY_NAMES}-1")
-
-FOREACH(i RANGE ${NUM_CPU_CAPABILITY_NAMES})
-  FOREACH(IMPL ${cpu_kernel_cpp_in})
-    LIST(GET CPU_CAPABILITY_NAMES ${i} CPU_CAPABILITY)
-    SET(NEW_IMPL ${CMAKE_CURRENT_BINARY_DIR}/${IMPL}.${CPU_CAPABILITY}.cpp)
-    CONFIGURE_FILE(${IMPL} ${NEW_IMPL} COPYONLY)
-    SET(cpu_kernel_cpp ${NEW_IMPL} ${cpu_kernel_cpp}) # Create list of copies
-    LIST(GET CPU_CAPABILITY_FLAGS ${i} FLAGS)
-    IF(MSVC)
-      SET(MACRO_FLAG "/DCPU_CAPABILITY_${CPU_CAPABILITY}")
-    ELSE(MSVC)
-      SET(MACRO_FLAG "-DCPU_CAPABILITY_${CPU_CAPABILITY}")
-    ENDIF(MSVC)
-    SET_SOURCE_FILES_PROPERTIES(${NEW_IMPL} PROPERTIES COMPILE_FLAGS "${FLAGS} ${MACRO_FLAG}")
-  ENDFOREACH()
-ENDFOREACH()
+########################
 
 ################################################################################
 # Helper functions
@@ -181,7 +153,6 @@ ADD_CUSTOM_TARGET(aten_files_are_generated
   DEPENDS ${generated_cpp}
 )
 
-
 SET(all_cpp ${base_cpp} ${native_cpp} ${native_cudnn_cpp} ${generated_cpp} ${ATen_CPU_SRCS} ${cpu_kernel_cpp})
 
 INCLUDE_DIRECTORIES(${ATen_CPU_INCLUDE})
@@ -214,17 +185,6 @@ ELSE()
   ADD_LIBRARY(ATen ${AT_LINK_STYLE} ${all_cpp})
 ENDIF()
 ADD_DEPENDENCIES(ATen aten_files_are_generated)
-
-set(TBB_ROOT_DIR "${PROJECT_SOURCE_DIR}/src/ATen/cpu/tbb/tbb_remote")
-set(TBB_BUILD_STATIC ON CACHE BOOL " " FORCE)
-set(TBB_BUILD_SHARED OFF CACHE BOOL " " FORCE)
-set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL " " FORCE)
-set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL " " FORCE)
-set(TBB_BUILD_TESTS OFF CACHE BOOL " " FORCE)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/ATen/cpu/tbb)
-set_property(TARGET tbb_static tbb_def_files PROPERTY FOLDER "dependencies")
-target_include_directories(tbb_static PUBLIC ${TBB_ROOT_DIR}/include)
-target_link_libraries(ATen tbb_static)
 
 SET_TARGET_PROPERTIES(ATen PROPERTIES VERSION 1 SOVERSION 1)
 
@@ -297,6 +257,7 @@ if (NNPACK_FOUND)
   target_link_libraries(ATen ${NNPACK_LIBRARIES})
 endif(NNPACK_FOUND)
 
+<<<<<<< 59d26f0a0a5ad4c670fa5643911ab6fb10c6e6a2
 <<<<<<< b837fbe812cd9605da6171634b5cbb836d7a6280
 if(MKLDNN_FOUND)
   target_link_libraries(ATen ${MKLDNN_LIBRARIES})
@@ -315,6 +276,8 @@ TARGET_LINK_LIBRARIES(ATen cpuinfo)
 
 >>>>>>> ATen ReduceOps (#5481)
 
+=======
+>>>>>>> Revert "ATen ReduceOps (#5481)" (#5765)
 IF(CUDA_FOUND)
   TARGET_LINK_LIBRARIES(ATen
     ${CUDA_LIBRARIES}
