@@ -1108,6 +1108,9 @@ void THTensor_(remainder)(THTensor *r_, THTensor *t, real value)
 void THTensor_(bitand)(THTensor *r_, THTensor *t, real value)
 {
 #if defined(TH_REAL_IS_FLOAT) || defined(TH_REAL_IS_DOUBLE) || defined(TH_REAL_IS_HALF)
+  (void)r_;
+  (void)t;
+  (void)value;
   return THError("bitand is only supported for integer type tensors");
 #else
   THTensor_(resizeAs)(r_, t);
@@ -1144,7 +1147,10 @@ void THTensor_(bitand)(THTensor *r_, THTensor *t, real value)
 void THTensor_(bitor)(THTensor *r_, THTensor *t, real value)
 {
 #if defined(TH_REAL_IS_FLOAT) || defined(TH_REAL_IS_DOUBLE) || defined(TH_REAL_IS_HALF)
-  return THError("bitxor is only supported for integer type tensors");
+  (void)r_;
+  (void)t;
+  (void)value;
+  return THError("bitor is only supported for integer type tensors");
 #else
   THTensor_(resizeAs)(r_, t);
   int64_t r_Size = THTensor_(nElement)(r_);
@@ -1180,6 +1186,9 @@ void THTensor_(bitor)(THTensor *r_, THTensor *t, real value)
 void THTensor_(bitxor)(THTensor *r_, THTensor *t, real value)
 {
 #if defined(TH_REAL_IS_FLOAT) || defined(TH_REAL_IS_DOUBLE) || defined(TH_REAL_IS_HALF)
+  (void)r_;
+  (void)t;
+  (void)value;
   return THError("bitxor is only supported for integer type tensors");
 #else
   THTensor_(resizeAs)(r_, t);
@@ -1673,6 +1682,9 @@ void THTensor_(cremainder)(THTensor *r_, THTensor *t, THTensor *src)
 void THTensor_(cbitand)(THTensor *r_, THTensor *t, THTensor *src)
 {
 #if defined(TH_REAL_IS_FLOAT) || defined(TH_REAL_IS_DOUBLE) || defined(TH_REAL_IS_HALF)
+  (void)r_;
+  (void)t;
+  (void)src;
   return THError("cbitand is only supported for integer type tensors");
 #else
   THTensor_(resizeAs)(r_, t);
@@ -1716,6 +1728,9 @@ void THTensor_(cbitand)(THTensor *r_, THTensor *t, THTensor *src)
 void THTensor_(cbitor)(THTensor *r_, THTensor *t, THTensor *src)
 {
 #if defined(TH_REAL_IS_FLOAT) || defined(TH_REAL_IS_DOUBLE) || defined(TH_REAL_IS_HALF)
+  (void)r_;
+  (void)t;
+  (void)src;
   return THError("cbitor is only supported for integer type tensors");
 #else
   THTensor_(resizeAs)(r_, t);
@@ -1759,6 +1774,9 @@ void THTensor_(cbitor)(THTensor *r_, THTensor *t, THTensor *src)
 void THTensor_(cbitxor)(THTensor *r_, THTensor *t, THTensor *src)
 {
 #if defined(TH_REAL_IS_FLOAT) || defined(TH_REAL_IS_DOUBLE) || defined(TH_REAL_IS_HALF)
+  (void)r_;
+  (void)t;
+  (void)src;
   return THError("cbitxor is only supported for integer type tensors");
 #else
   THTensor_(resizeAs)(r_, t);
