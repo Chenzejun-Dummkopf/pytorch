@@ -129,10 +129,10 @@ static inline void THNN_(Col2Im_shapeCheck)(
                 "2D or 3D input tensor expected but got %s");
 
   int batch_dim = (ndim == 4) ? 0 : -1;
-  long nInputPlane  = input->size[batch_dim + 1];
-  long inputLength  = input->size[batch_dim + 2];
+  int64_t nInputPlane  = input->size[batch_dim + 1];
+  int64_t inputLength  = input->size[batch_dim + 2];
 
-  long nOutputPlane = nInputPlane / (kW * kH);
+  int64_t nOutputPlane = nInputPlane / (kW * kH);
 
   if (outputWidth < 1 || outputHeight < 1) {
     THError("Given input size: (%lld x %lld). "
@@ -161,9 +161,9 @@ void THNN_(Col2Im_updateOutput)(
       THTensor_(resize3d)(input, 1, input->size[0], input->size[1]);
   }
 
-  long batchSize = input->size[0];
-  long nInputPlane = input->size[1];
-  long nOutputPlane = nInputPlane / (kW * kH);
+  int64_t batchSize = input->size[0];
+  int64_t nInputPlane = input->size[1];
+  int64_t nOutputPlane = nInputPlane / (kW * kH);
 
   input = THTensor_(newContiguous)(input);
 
