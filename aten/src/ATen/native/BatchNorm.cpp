@@ -20,7 +20,11 @@ namespace {
 }
 
 bool use_mkldnn(const at::Tensor& input) {
-#if AT_MKLDNN_ENABLED()
+
+//temp disable batch_norm for MKLDNN's low performance
+#define use_batch_norm (0)
+
+#if AT_MKLDNN_ENABLED() && use_batch_norm
   return input.type().backend() == kCPU &&
          input.type().scalarType() == kFloat && // only on CPU Float Tensors
          input.ndimension() == 4; // must be in NCHW format
