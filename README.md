@@ -29,6 +29,29 @@ We are in an early-release beta. Expect some adventures and rough edges.
 | Windows GPU | <center>—</center> | [![Build Status](https://ci.pytorch.org/jenkins/job/pytorch-builds/job/pytorch-win-ws2016-cuda9-cudnn7-py3-trigger/badge/icon)](https://ci.pytorch.org/jenkins/job/pytorch-builds/job/pytorch-win-ws2016-cuda9-cudnn7-py3-trigger/)
 
 
+## Some known issues using Intel compiler
+###  Linux without GPU on single node  
+#### compilation and link  
+- [x] AVX/AVX2 support  
+- [x] Some C++ pragmatics problems(TCP, dataChannel and so on)  
+- [ ] STDCXX11 test when compiling, walk around by remove no-vla flag, but could not identify the potential problem.  
+- [ ] Some warnings need to be removed  
+#### test  
+- [ ]  ABI support when using icpc  
+- [ ]  distributed module failed  
+- [ ]  jit module failed  
+
+### More test when using other version of Intel compiler  
+### Compatialbe problems with GPU  
+- [ ] The current cua only support ICC 15.0 and ICC 16.0 on Linux x86_64.  
+- [ ] CUDA and CUDNN test  
+- [ ] other unkown problems  
+### Cross-platform support  
+- [ ] PC and servers: Linux, Windows & Mac.
+- [ ] Mobile device: unkown(Could be Forbitten directly)
+### Multi nodes Test
+
+
 ## More about PyTorch
 
 At a granular level, PyTorch is a library that consists of the following components:
