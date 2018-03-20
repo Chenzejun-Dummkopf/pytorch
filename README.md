@@ -42,7 +42,7 @@ We are in an early-release beta. Expect some adventures and rough edges.
 - [ ]  jit module failed  
 
 ### More test when using other version of Intel compiler  
-### Compatialbe problems with GPU  
+### Compatible problems with GPU  
 - [ ] The current cua only support ICC 15.0 and ICC 16.0 on Linux x86_64.  
 - [ ] CUDA and CUDNN test  
 - [ ] other unkown problems  
