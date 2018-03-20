@@ -49,6 +49,7 @@ We are in an early-release beta. Expect some adventures and rough edges.
 ### Cross-platform support  
 - [ ] PC and servers: Linux, Windows & Mac.
 - [ ] Mobile device: unkown(Could be Forbitten directly)
+- [ ] Docker test
 ### Multi nodes Test
 
 
@@ -220,6 +221,10 @@ On Linux
 ```bash
 python setup.py install
 ```
+Intel-PyTorch team also provide a script to install pytorch using Intel compilers easily.  
+```bash
+./install.sh
+```
 
 On macOS
 ```bash
@@ -238,7 +243,6 @@ PyTorch spawns different sets of OpenMP threads for forward path and backward pa
 export OMP_NUM_THREADS=56
 export KMP_AFFINITY=granularity=fine,compact,1,0
 ```
-
 ### Docker image
 
 Dockerfile is supplied to build images with cuda support and cudnn v7. Build as usual
