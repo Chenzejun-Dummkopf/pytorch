@@ -76,7 +76,7 @@ DataChannelTCP::DataChannelTCP(InitMethod::Config config, int timeout)
     _socket = config.master.listen_socket;
     _port = config.master.listen_port;
 
-    _processes[0] = {
+    _processes[0] = (Process){
       .rank = 0,
       .address = "",
       .port = 0,
@@ -84,7 +84,7 @@ DataChannelTCP::DataChannelTCP(InitMethod::Config config, int timeout)
     };
   } else { // WORKER
     // add master
-    _processes[0] = {
+    _processes[0] = (Process){
       .rank = 0,
       .address = config.worker.master_addr,
       .port = config.worker.master_port,
@@ -125,7 +125,7 @@ bool DataChannelTCP::initWorker() {
     port_type p_port = recv_value<port_type>(master.socket);
     std::string p_address = recv_string(master.socket);
 
-    _processes[p_rank] = {
+    _processes[p_rank] = (Process){
       .rank = p_rank,
       .address = p_address,
       .port = p_port,
@@ -190,7 +190,7 @@ bool DataChannelTCP::initMaster() {
       );
     }
 
-    _processes[p_rank] = {
+    _processes[p_rank] = (Process){
       .rank = p_rank,
       .address = p_address,
       .port = p_port,
