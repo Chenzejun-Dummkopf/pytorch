@@ -69,39 +69,6 @@ void THNN_(DistKLDivCriterion_updateGradInput)(
   THNN_CHECK_SHAPE(input, target);
   THTensor_(resizeAs)(gradInput, input);
 
-  if (!reduce) {
-    THNN_CHECK_SHAPE(input, gradOutput);
-    int serial_path = 0;
-#ifdef _OPENMP
-    int inOMP = omp_in_parallel();
-    if (inOMP) {
-      serial_path = 1;
-    } else {
-      int64_t gradInput_size = THTensor_(nElement)(gradInput);
-      int gradInput_contig = THTensor_(isContiguous)(gradInput);
-      int gradOutput_contig = THTensor_(isContiguous)(gradOutput);
-      int target_contig = THTensor_(isContiguous)(target);
-      TH_TENSOR_APPLY3_OMP(gradInput_size, gradInput_contig, gradOutput_contig, target_contig,
-        real, gradInput, real, gradOutput, real, target,
-        *gradInput_data = *target_data > 0 ? (-*target_data) * *gradOutput_data : 0;,
-        THNN_OMP_OVERHEAD_THRESHOLD
-      );
-    }
-#else
-    serial_path = 1;
-#endif
-    if (serial_path) {
-      TH_TENSOR_APPLY3(real, gradInput, real, gradOutput, real, target,
-        *gradInput_data = *target_data > 0 ? (-*target_data) * *gradOutput_data : 0;
-      );
-    }
-    return;
-  }
-
-  THNN_CHECK_DIM_SIZE(gradOutput, 1, 0, 1);
-
-  real norm = (sizeAverage ? 1./((real)THTensor_(nElement)(input)) : 1.);
-
   int serial_path = 0;
 #ifdef _OPENMP
   int inOMP = omp_in_parallel();
@@ -110,21 +77,45 @@ void THNN_(DistKLDivCriterion_updateGradInput)(
   } else {
     int64_t gradInput_size = THTensor_(nElement)(gradInput);
     int gradInput_contig = THTensor_(isContiguous)(gradInput);
-    int input_contig = THTensor_(isContiguous)(input);
     int target_contig = THTensor_(isContiguous)(target);
-    TH_TENSOR_APPLY3_OMP(gradInput_size, gradInput_contig, input_contig, target_contig,
-      real, gradInput, real, input, real, target,
-      *gradInput_data = *target_data > 0 ? norm * (-*target_data) * THTensor_fastGet1d(gradOutput, 0) : 0;,
-      THNN_OMP_OVERHEAD_THRESHOLD
-    );
+    if (!reduce) {
+      THNN_CHECK_SHAPE(input, gradOutput);
+      int gradOutput_contig = THTensor_(isContiguous)(gradOutput);
+      TH_TENSOR_APPLY3_OMP(gradInput_size, gradInput_contig, gradOutput_contig, target_contig,
+        real, gradInput, real, gradOutput, real, target,
+        *gradInput_data = *target_data > 0 ? (-*target_data) * *gradOutput_data : 0;,
+        THNN_OMP_OVERHEAD_THRESHOLD
+      );
+    } else {
+      THNN_CHECK_DIM_SIZE(gradOutput, 1, 0, 1);
+
+      real norm = (sizeAverage ? 1./((real)THTensor_(nElement)(input)) : 1.);
+
+      TH_TENSOR_APPLY2_OMP(gradInput_size, gradInput_contig, target_contig,
+        real, gradInput, real, target,
+        *gradInput_data = *target_data > 0 ? norm * (-*target_data) * THTensor_fastGet1d(gradOutput, 0) : 0;,
+        THNN_OMP_OVERHEAD_THRESHOLD
+      );
+    }
   }
 #else
   serial_path = 1;
 #endif
   if (serial_path) {
-    TH_TENSOR_APPLY3(real, gradInput, real, input, real, target,
+    if (!reduce) {
+      THNN_CHECK_SHAPE(input, gradOutput);
+      TH_TENSOR_APPLY3(real, gradInput, real, gradOutput, real, target,
+        *gradInput_data = *target_data > 0 ? (-*target_data) * *gradOutput_data : 0;
+      );
+    } else {
+      THNN_CHECK_DIM_SIZE(gradOutput, 1, 0, 1);
+
+      real norm = (sizeAverage ? 1./((real)THTensor_(nElement)(input)) : 1.);
+
+      TH_TENSOR_APPLY2(real, gradInput, real, target,
       *gradInput_data = *target_data > 0 ? norm * (-*target_data) * THTensor_fastGet1d(gradOutput, 0) : 0;
     );
+    }
   }
 }
 
