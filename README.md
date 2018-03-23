@@ -1,6 +1,7 @@
 <p align="center"><img width="40%" src="docs/source/_static/img/pytorch-logo-dark.png" /></p>
 
 --------------------------------------------------------------------------------
+This repo serves as a prototype design for CPU optimization.
 
 PyTorch is a Python package that provides two high-level features:
 - Tensor computation (like NumPy) with strong GPU acceleration
@@ -175,6 +176,9 @@ conda install numpy pyyaml mkl setuptools cmake cffi typing
 
 # Add LAPACK support for the GPU
 conda install -c pytorch magma-cuda80 # or magma-cuda90 if CUDA 9
+
+# Install MKLDNN
+conda install -c mingfeima mkldnn 
 ```
 
 On macOS
@@ -196,6 +200,14 @@ python setup.py install
 On macOS
 ```bash
 MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py install
+```
+
+### BKM on Xeon
+PyTorch spawns different sets of OpenMP threads for forward path and backward path, so addtional control over OpenMP is needed to run CPU effcienctly. Set `OMP_NUM_THREADS` to be the number of physical cores. Take Xeon Skylake 8180 as an example, the machine has 2 sockets with 28 cores per socket.
+```bash
+# for Xeon Skylake 8180
+export OMP_NUM_THREADS=56
+export KMP_AFFINITY=compact,1,0,granularity=fine
 ```
 
 ### Docker image
