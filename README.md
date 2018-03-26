@@ -203,7 +203,7 @@ MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py install
 ```
 
 ### BKM on Xeon
-By default, PyTorch will finds any available MPI library during installation. 
+By default, PyTorch will find any available MPI library during installation. 
 In order to compile against Intel MPI, add corresponding environment variables before installation.
 ```bash
 source /opt/intel/compilers_and_libraries/linux/mpi/bin64/mpivars.sh
