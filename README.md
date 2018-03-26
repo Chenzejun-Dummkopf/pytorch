@@ -203,11 +203,16 @@ MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py install
 ```
 
 ### BKM on Xeon
+By default, PyTorch will finds any available MPI library during installation. 
+In order to compile against Intel MPI, add corresponding environment variables before installation.
+```bash
+source /opt/intel/compilers_and_libraries/linux/mpi/bin64/mpivars.sh
+```
 PyTorch spawns different sets of OpenMP threads for forward path and backward path, so addtional control over OpenMP is needed to run CPU effcienctly. Set `OMP_NUM_THREADS` to be the number of physical cores. Take Xeon Skylake 8180 as an example, the machine has 2 sockets with 28 cores per socket.
 ```bash
 # for Xeon Skylake 8180
 export OMP_NUM_THREADS=56
-export KMP_AFFINITY=compact,1,0,granularity=fine
+export KMP_AFFINITY=granularity=fine,compact,1,0
 ```
 
 ### Docker image
