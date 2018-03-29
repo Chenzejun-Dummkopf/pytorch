@@ -199,7 +199,7 @@ void THNN_(LSTMFused_updateOutput)(
   real *hy_data = THTensor_(data)(hy);
   real *cy_data = THTensor_(data)(cy);
 
-  #pragma parallel for
+  #pragma omp parallel for
   for (size_t index = 0; index < count; ++index) {
     size_t offset = (index/hsz)*4*hsz+index%hsz;
 
@@ -298,7 +298,7 @@ void THNN_(LSTMFused_updateGradInput)(
   real *gradOutputCell_data = THTensor_(data)(gradOutputCell);
   real *gradInputCx_data = THTensor_(data)(gradInputCx);
 
-  #pragma parallel for
+  #pragma omp parallel for
   for (size_t index = 0; index < count; ++index) {
     size_t offset = (index/hsz)*4*hsz+index%hsz;
 
