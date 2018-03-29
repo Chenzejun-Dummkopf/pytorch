@@ -189,7 +189,7 @@ ADD_CUSTOM_TARGET(aten_files_are_generated
 )
 
 
-SET(all_cpp ${base_cpp} ${native_cpp} ${native_cudnn_cpp} ${generated_cpp} ${ATen_CPU_SRCS} ${cpu_kernel_cpp})
+SET(all_cpp ${base_cpp} ${native_cpp} ${native_cudnn_cpp} ${native_mkldnn_cpp} ${generated_cpp} ${ATen_CPU_SRCS} ${cpu_kernel_cpp})
 
 INCLUDE_DIRECTORIES(${ATen_CPU_INCLUDE})
 IF(NOT NO_CUDA)
@@ -304,15 +304,9 @@ if (NNPACK_FOUND)
   target_link_libraries(ATen ${NNPACK_LIBRARIES})
 endif(NNPACK_FOUND)
 
-<<<<<<< c0f85cc426e47fa8ddb520f07c0ff6f0e98ec1f4
-<<<<<<< 59d26f0a0a5ad4c670fa5643911ab6fb10c6e6a2
-<<<<<<< b837fbe812cd9605da6171634b5cbb836d7a6280
 if(MKLDNN_FOUND)
   target_link_libraries(ATen ${MKLDNN_LIBRARIES})
 endif(MKLDNN_FOUND)
-=======
-=======
->>>>>>> ATen ReduceOps (#5776)
 
 # ---[ Configure cpuinfo
 IF(NOT TARGET cpuinfo)
@@ -324,14 +318,6 @@ IF(NOT TARGET cpuinfo)
 ENDIF()
 TARGET_LINK_LIBRARIES(ATen cpuinfo)
 
-<<<<<<< c0f85cc426e47fa8ddb520f07c0ff6f0e98ec1f4
->>>>>>> ATen ReduceOps (#5481)
-
-=======
->>>>>>> Revert "ATen ReduceOps (#5481)" (#5765)
-=======
-
->>>>>>> ATen ReduceOps (#5776)
 IF(CUDA_FOUND)
   TARGET_LINK_LIBRARIES(ATen
     ${CUDA_LIBRARIES}
