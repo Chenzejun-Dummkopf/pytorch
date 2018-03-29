@@ -10,7 +10,7 @@ PyTorch is a Python package that provides two high-level features:
 You can reuse your favorite Python packages such as NumPy, SciPy and Cython to extend PyTorch when needed.
 
 We are in an early-release beta. Expect some adventures and rough edges.
-- [Some known issues using Intel compiler](#Some-known-issues-using-Intel-compiler)
+- [Some known issues using Intel compiler](#some-known-issues-using-intel-compiler)
 - [More about PyTorch](#more-about-pytorch)
 - [Installation](#installation)
   - [Binaries](#binaries)
@@ -29,7 +29,7 @@ We are in an early-release beta. Expect some adventures and rough edges.
 | Windows GPU | <center>—</center> | [![Build Status](https://ci.pytorch.org/jenkins/job/pytorch-builds/job/pytorch-win-ws2016-cuda9-cudnn7-py3-trigger/badge/icon)](https://ci.pytorch.org/jenkins/job/pytorch-builds/job/pytorch-win-ws2016-cuda9-cudnn7-py3-trigger/)
 
 
-## Some known issues using Intel compiler   
+## Some known issues using Intel compiler
 
 Intel compiler version should be 18.0.1. g++ above 5.0 is recommended and it should be found in the path /usr/bin. Something beyond expected maybe happens if g++ is not in the required path. Ticks in the list show that the problems have been resolved.  
 ###  Linux without GPU on single node  
