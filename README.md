@@ -29,8 +29,8 @@ We are in an early-release beta. Expect some adventures and rough edges.
 | Windows GPU | <center>—</center> | [![Build Status](https://ci.pytorch.org/jenkins/job/pytorch-builds/job/pytorch-win-ws2016-cuda9-cudnn7-py3-trigger/badge/icon)](https://ci.pytorch.org/jenkins/job/pytorch-builds/job/pytorch-win-ws2016-cuda9-cudnn7-py3-trigger/)
 
 
-## Some known issues using Intel compiler
-###  Linux without GPU on single node  
+## Some known issues using Intel compiler（tick shows that the problem has been resolved）
+###  Linux without GPU on single node and with specific compiler(icc version 18.0.1 (gcc version 5.0.0 compatibility)) 
 #### compilation and link  
 - [x] AVX/AVX2 support  
 - [x] Some C++ pragmatics problems(TCP, dataChannel and so on)  
