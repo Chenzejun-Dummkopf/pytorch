@@ -214,6 +214,13 @@ PyTorch spawns different sets of OpenMP threads for forward path and backward pa
 export OMP_NUM_THREADS=56
 export KMP_AFFINITY=granularity=fine,compact,1,0
 ```
+Currently, we use the following benchmarks for tracking CNN and RNN performance, data on Xeon Skylake 8180 is also available.
+* [convnet-benchmarks](https://github.com/mingfeima/convnet-benchmarks)
+* [pytorch-rnn-benchmark](https://github.com/xhzhao/pytorch-rnn-benchmark)
+
+For more information such as performance data, release plan, please visit [IntelPyTorchWiki](https://wiki.ith.intel.com/display/DL/Intel+PyTorch)
+
+Please note that the optimization is still working in progress so current benchmark performance is suboptimal. Contact [Ma Mingfei](mingfei.ma@intel.com) if have any issues with Intel-PyTorch.
 
 ### Docker image
 
