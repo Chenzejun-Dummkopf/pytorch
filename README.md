@@ -212,6 +212,7 @@ PyTorch spawns different sets of OpenMP threads for forward path and backward pa
 ```bash
 # for Xeon Skylake 8180
 export OMP_NUM_THREADS=56
+export KMP_BLOCKTIME=1
 export KMP_AFFINITY=granularity=fine,compact,1,0
 ```
 Currently, we use the following benchmarks for tracking CNN and RNN performance, data on Xeon Skylake 8180 is also available.
