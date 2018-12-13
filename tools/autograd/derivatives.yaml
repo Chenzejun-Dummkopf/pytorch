@@ -1357,7 +1357,7 @@
   self: mkldnn_relu_backward(self, grad)
 
 - name: mkldnn_relu_(Tensor self)
-  self: mkldnn_relu_backward(output, grad)
+  self: mkldnn_relu_backward(result, grad)
 
 - name: mkldnn_batch_norm(Tensor input, Tensor weight, Tensor bias, Tensor running_mean, Tensor running_var, bool training, double exponential_average_factor, double epsilon)
   input, weight, bias: mkldnn_batch_norm_backward(input, grad.contiguous(), weight, bias, running_mean, running_var, result1, result2, epsilon, training)

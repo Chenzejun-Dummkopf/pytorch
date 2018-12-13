@@ -3348,28 +3348,28 @@
 - func: adaptive_max_pool3d_backward(Tensor grad_output, Tensor self, Tensor indices) -> Tensor
   python_module: nn
 
-- func: avg_pool2d_out(Tensor output, Tensor self, IntList[2] kernel_size, IntList[2] stride={}, IntList[2] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
+- func: thnn_avg_pool2d_out(Tensor output, Tensor self, IntList[2] kernel_size, IntList[2] stride={}, IntList[2] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
   python_module: nn
 
-- func: avg_pool2d(Tensor self, IntList[2] kernel_size, IntList[2] stride={}, IntList[2] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
+- func: thnn_avg_pool2d(Tensor self, IntList[2] kernel_size, IntList[2] stride={}, IntList[2] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
   python_module: nn
 
-- func: avg_pool2d_backward_out(Tensor grad_input, Tensor grad_output, Tensor self, IntList[2] kernel_size, IntList[2] stride, IntList[2] padding, bool ceil_mode, bool count_include_pad) -> Tensor
+- func: thnn_avg_pool2d_backward_out(Tensor grad_input, Tensor grad_output, Tensor self, IntList[2] kernel_size, IntList[2] stride, IntList[2] padding, bool ceil_mode, bool count_include_pad) -> Tensor
   python_module: nn
 
-- func: avg_pool2d_backward(Tensor grad_output, Tensor self, IntList[2] kernel_size, IntList[2] stride, IntList[2] padding, bool ceil_mode, bool count_include_pad) -> Tensor
+- func: thnn_avg_pool2d_backward(Tensor grad_output, Tensor self, IntList[2] kernel_size, IntList[2] stride, IntList[2] padding, bool ceil_mode, bool count_include_pad) -> Tensor
   python_module: nn
 
-- func: avg_pool3d_out(Tensor output, Tensor self, IntList[3] kernel_size, IntList[3] stride={}, IntList[3] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
+- func: thnn_avg_pool3d_out(Tensor output, Tensor self, IntList[3] kernel_size, IntList[3] stride={}, IntList[3] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
   python_module: nn
 
-- func: avg_pool3d(Tensor self, IntList[3] kernel_size, IntList[3] stride={}, IntList[3] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
+- func: thnn_avg_pool3d(Tensor self, IntList[3] kernel_size, IntList[3] stride={}, IntList[3] padding=0, bool ceil_mode=false, bool count_include_pad=true) -> Tensor
   python_module: nn
 
-- func: avg_pool3d_backward_out(Tensor grad_input, Tensor grad_output, Tensor self, IntList[3] kernel_size, IntList[3] stride, IntList[3] padding, bool ceil_mode, bool count_include_pad) -> Tensor
+- func: thnn_avg_pool3d_backward_out(Tensor grad_input, Tensor grad_output, Tensor self, IntList[3] kernel_size, IntList[3] stride, IntList[3] padding, bool ceil_mode, bool count_include_pad) -> Tensor
   python_module: nn
 
-- func: avg_pool3d_backward(Tensor grad_output, Tensor self, IntList[3] kernel_size, IntList[3] stride, IntList[3] padding, bool ceil_mode, bool count_include_pad) -> Tensor
+- func: thnn_avg_pool3d_backward(Tensor grad_output, Tensor self, IntList[3] kernel_size, IntList[3] stride, IntList[3] padding, bool ceil_mode, bool count_include_pad) -> Tensor
   python_module: nn
 
 - func: fractional_max_pool2d_out(Tensor output, Tensor indices, Tensor self, IntList[2] kernel_size, IntList[2] output_size, Tensor random_samples) -> (Tensor output, Tensor indices)

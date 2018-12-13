@@ -473,7 +473,6 @@ static std::vector<Value*> gradientForNode(Node* node, ArrayRef<Value*> grad_val
       });
       return {backward_value->node()->output(0), nullptr, nullptr, nullptr, nullptr};
 
->>>>>>> upstream/master
     } else if (node->matches("aten::log_softmax(Tensor self, int dim) -> Tensor")) {
       JIT_ASSERT(grads.size() == 1);
       auto graph = node->owningGraph();
