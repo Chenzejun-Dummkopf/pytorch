@@ -41,13 +41,8 @@ static std::vector<int64_t> pooling_output_size(IntList input_size, IntList kern
   output_size[0] = input_size[0];
   output_size[1] = input_size[1];
   for (size_t d = 2; d < dim; ++d) {
-    if (ceil_mode) {
-      output_size[d] = std::ceil((float)(input_size[d] + (2 * padding[d - 2])
-        - kernel_size[d-2]) / (float)stride[d - 2]) + 1;
-    } else {
-      output_size[d] = std::floor((float)(input_size[d] + (2 * padding[d - 2])
-        - kernel_size[d-2]) / (float)stride[d - 2] + 1);
-    }
+      output_size[d] = (input_size[d] + 2 * padding[d - 2] - kernel_size[d-2]
+        + (ceil_mode ? stride[d-2] - 1 : 0)) / stride[d - 2] + 1;
   }
 
   if (dim == 5) {
