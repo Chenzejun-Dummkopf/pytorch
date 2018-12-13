@@ -290,6 +290,13 @@ static inline Tensor& bmm_out_or_baddbmm_(Tensor& self_or_result, const Tensor& 
   } else if (contraction_size == 0) {
     return self_or_result.zero_();
   }
+
+  bool use_mkl = false;
+  use_mkl = at::hasMKL() && (batch1.stride(1) == 1 || batch1.stride(2) == 1)
+            && (batch2.stride(1) == 1 || batch2.stride(2) == 1)
+            && at::native::is_floating_point(self_or_result)
+            && self_or_result.is_contiguous();
+
   if (contraction_size * res_rows * res_cols < 400) {
     if (is_bmm_out) {
       AT_DISPATCH_ALL_TYPES(batch1.type(), "bmm", [&] {
@@ -300,7 +307,7 @@ static inline Tensor& bmm_out_or_baddbmm_(Tensor& self_or_result, const Tensor& 
           baddbmm_cpu_kernel<scalar_t, false>(self_or_result, batch1, batch2, beta, alpha);
         });
     }
-  } else if (at::hasMKL() && at::native::is_floating_point(self_or_result)) {
+  } else if (use_mkl) {
     at::native::_baddbmm_mkl_(self_or_result, batch1, batch2, beta, alpha);
   } else { // split along batch dimension
     if (is_bmm_out) {
