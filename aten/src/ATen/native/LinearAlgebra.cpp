@@ -1,10 +1,11 @@
-#include "ATen/ATen.h"
-#include "ATen/ExpandUtils.h"
-#include "ATen/Dispatch.h"
-#include "ATen/NativeFunctions.h"
-#include "ATen/native/LinearAlgebraUtils.h"
-#include "ATen/TensorUtils.h"
-#include "ATen/Parallel.h"
+#include <ATen/ATen.h>
+#include <ATen/ExpandUtils.h>
+#include <ATen/Dispatch.h>
+#include <ATen/NativeFunctions.h>
+#include <ATen/LegacyTHFunctions.h>
+#include <ATen/native/LinearAlgebraUtils.h>
+#include <ATen/TensorUtils.h>
+#include <ATen/Parallel.h>
 #include <functional>
 #include <numeric>
 #include <vector>
@@ -141,70 +142,70 @@ static void check_1d(const Tensor& t, const char* arg, const char* fn) {
 Tensor ger(const Tensor& self, const Tensor& vec2) {
   check_1d(self, "self", "ger");
   check_1d(vec2, "vec2", "ger");
-  return at::_th_ger(self, vec2);
+  return at::legacy::th::_th_ger(self, vec2);
 }
 
 Tensor& ger_out(Tensor& result, const Tensor& self, const Tensor& vec2) {
   check_1d(self, "self", "ger");
   check_1d(vec2, "vec2", "ger");
-  return at::_th_ger_out(result, self, vec2);
+  return at::legacy::th::_th_ger_out(result, self, vec2);
 }
 
 Tensor mm(const Tensor& self, const Tensor& mat2) {
   if (self.is_sparse()) {
     return mat2.type().addmm(at::zeros({}, mat2.type()), self, mat2, 0, 1);
   }
-  return at::_th_mm(self, mat2);
+  return at::legacy::th::_th_mm(self, mat2);
 }
 
 Tensor& mm_out(Tensor& result, const Tensor& self, const Tensor& mat2) {
   if (self.is_sparse()) {
     return at::addmm_out(result, at::zeros({}, mat2.options()), self, mat2, 0, 1);
   }
-  return at::_th_mm_out(result, self, mat2);
+  return at::legacy::th::_th_mm_out(result, self, mat2);
 }
 
 Tensor mv(const Tensor& self, const Tensor& vec) {
   check_1d(vec, "vec", "mv");
-  return at::_th_mv(self, vec);
+  return at::legacy::th::_th_mv(self, vec);
 }
 
 Tensor& mv_out(Tensor& result, const Tensor& self, const Tensor& vec) {
   check_1d(vec, "vec", "mv");
-  return at::_th_mv_out(result, self, vec);
+  return at::legacy::th::_th_mv_out(result, self, vec);
 }
 
 Tensor addmv(const Tensor& self, const Tensor& mat, const Tensor& vec, Scalar beta, Scalar alpha) {
   check_1d(vec, "vec", "addmv");
-  return at::_th_addmv(self, mat, vec, beta, alpha);
+  return at::legacy::th::_th_addmv(self, mat, vec, beta, alpha);
 }
 
 Tensor& addmv_(Tensor& self, const Tensor& mat, const Tensor& vec, Scalar beta, Scalar alpha) {
   check_1d(vec, "vec", "addmv");
-  return at::_th_addmv_(self, mat, vec, beta, alpha);
+  return at::legacy::th::_th_addmv_(self, mat, vec, beta, alpha);
 }
 
 Tensor& addmv_out(Tensor &result, const Tensor& self, const Tensor& mat, const Tensor& vec, Scalar beta, Scalar alpha) {
   check_1d(vec, "vec", "addmv");
-  return at::_th_addmv_out(result, self, mat, vec, beta, alpha);
+  return at::legacy::th::_th_addmv_out(result, self, mat, vec, beta, alpha);
 }
 
 Tensor addr(const Tensor& self, const Tensor& vec1, const Tensor& vec2, Scalar beta, Scalar alpha) {
   check_1d(vec1, "vec1", "addr");
   check_1d(vec2, "vec2", "addr");
-  return at::_th_addr(self, vec1, vec2, beta, alpha);
+  return at::legacy::th::_th_addr(self, vec1, vec2, beta, alpha);
 }
 
 Tensor& addr_(Tensor& self, const Tensor& vec1, const Tensor& vec2, Scalar beta, Scalar alpha) {
   check_1d(vec1, "vec1", "addr");
   check_1d(vec2, "vec2", "addr");
-  return at::_th_addr_(self, vec1, vec2, beta, alpha);
+  return at::legacy::th::_th_addr_(self, vec1, vec2, beta, alpha);
 }
 
 Tensor& addr_out(Tensor &result, const Tensor& self, const Tensor& vec1, const Tensor& vec2, Scalar beta, Scalar alpha) {
   check_1d(vec1, "vec1", "addr");
   check_1d(vec2, "vec2", "addr");
-  return at::_th_addr_out(result, self, vec1, vec2, beta, alpha);
+  return at::legacy::th::_th_addr_out(result, self, vec1, vec2, beta, alpha);
 }
 
 template <typename scalar_t, bool is_bmm>
@@ -291,10 +292,11 @@ static inline Tensor& bmm_out_or_baddbmm_(Tensor& self_or_result, const Tensor& 
     return self_or_result.zero_();
   }
 
-  auto batch_items_contiguous_or_transposed = [&](const Tensor& t) {
-    return (t.stride(2) == 1 && t.stride(1) == t.size(2))
-            || (t.stride(1) == 1 && t.stride(2) == t.size(1));
-  };
+  bool use_mkl = false;
+  use_mkl = at::hasMKL() && (batch1.stride(1) == 1 || batch1.stride(2) == 1)
+            && (batch2.stride(1) == 1 || batch2.stride(2) == 1)
+            && at::native::is_floating_point(self_or_result)
+            && self_or_result.is_contiguous();
 
   if (contraction_size * res_rows * res_cols < 400) {
     if (is_bmm_out) {
@@ -306,10 +308,7 @@ static inline Tensor& bmm_out_or_baddbmm_(Tensor& self_or_result, const Tensor& 
           baddbmm_cpu_kernel<scalar_t, false>(self_or_result, batch1, batch2, beta, alpha);
         });
     }
-  } else if (at::hasMKL() && at::native::is_floating_point(self_or_result)
-	     && batch_items_contiguous_or_transposed(batch1)
-	     && batch_items_contiguous_or_transposed(batch2)
-	     && self_or_result.is_contiguous()) {
+  } else if (use_mkl) {
     at::native::_baddbmm_mkl_(self_or_result, batch1, batch2, beta, alpha);
   } else { // split along batch dimension
     if (is_bmm_out) {
@@ -358,7 +357,7 @@ Tensor& bmm_out_cpu(Tensor &result, const Tensor& batch1, const Tensor& batch2) 
 Tensor dot(const Tensor& self, const Tensor& tensor) {
   check_1d(self, "self", "dot");
   check_1d(tensor, "tensor", "dot");
-  return at::_th_dot(self, tensor);
+  return at::legacy::th::_th_dot(self, tensor);
 }
 
 Tensor& dot_out(Tensor& result, const Tensor& self, const Tensor& tensor) {
