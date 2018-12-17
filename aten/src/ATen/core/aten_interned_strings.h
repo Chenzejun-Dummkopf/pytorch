@@ -471,6 +471,10 @@ _(aten, mkldnn_convolution) \
 _(aten, mkldnn_convolution_backward) \
 _(aten, mkldnn_convolution_backward_input) \
 _(aten, mkldnn_convolution_backward_weights) \
+_(aten, mkldnn_convolution_transpose) \
+_(aten, mkldnn_convolution_transpose_backward) \
+_(aten, mkldnn_convolution_transpose_backward_input) \
+_(aten, mkldnn_convolution_transpose_backward_weights) \
 _(aten, mkldnn_relu) \
 _(aten, mkldnn_relu_) \
 _(aten, mkldnn_relu_backward) \
