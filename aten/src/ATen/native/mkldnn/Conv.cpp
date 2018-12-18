@@ -40,7 +40,6 @@ Tensor mkldnn_convolution_transpose_backward_input(IntList input_size, const Ten
   AT_ERROR("mkldnn_convolution_transpose_backward_input: ATen not compiled with MKLDNN support");
 }
 
-
 std::tuple<Tensor, Tensor> mkldnn_convolution_transpose_backward_weights(IntList weight_size,
     const Tensor& grad_output, const Tensor& input, IntList padding, IntList output_padding,
     IntList stride, IntList dilation, int64_t groups, bool bias_defined) {
@@ -109,7 +108,6 @@ static std::vector<int64_t> conv_input_size(
   }
   return input_size;
 }
-
 
 struct ConvolutionParams {
   int64_t dim;
@@ -603,7 +601,6 @@ Tensor mkldnn_convolution(const Tensor& input, const Tensor& weight, const Tenso
 
   return output;
 }
-
 
 Tensor mkldnn_convolution_backward_input(IntList input_size, const Tensor& grad_output,
     const Tensor& weight, IntList padding, IntList stride, IntList dilation,

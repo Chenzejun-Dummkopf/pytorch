@@ -373,6 +373,7 @@ at::Tensor _convolution(
     AT_CHECK(!bias.defined() || (input.type() == bias.type()),
              "Input type (", input.type().toString(), ") and bias type (", bias.type().toString(),
              ") should be the same");
+
     output = at::mkldnn_convolution(input, weight, bias, params.padding, params.stride, params.dilation, params.groups);
   } else if (params.use_mkldnn(input) && params.transposed && params.groups == 1) {
     AT_CHECK(input.type() == weight.type(),
@@ -381,7 +382,7 @@ at::Tensor _convolution(
     AT_CHECK(!bias.defined() || (input.type() == bias.type()),
              "Input type (", input.type().toString(), ") and bias type (", bias.type().toString(),
              ") should be the same");
-    std::cout<<"using mkldnn"<<std::endl;
+
     output = at::mkldnn_convolution_transpose(input, weight, bias, params.padding, params.output_padding, params.stride, params.dilation, params.groups);
   } else {
     if (params.groups == 1) {
