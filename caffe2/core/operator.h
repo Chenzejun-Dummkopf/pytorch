@@ -531,13 +531,6 @@ inline NetDef OperatorBase::GetSingleArgument<NetDef>(
   return NetDef();
 }
 
-// If your operator does not need any specialized contructor or destructor,
-// you can simply use this to save two lines of code.
-#define USE_SIMPLE_BASE_CTOR_DTOR(name)                                        \
-  name(const OperatorDef& operator_def, Workspace* ws)                         \
-      : OperatorBase(operator_def, ws) {}                                      \
-  virtual ~name() noexcept {}
-
 // OP_SINGLE_ARG provides a shorter initialization choice for initialization of
 // member variables for the class constructors.
 // This is a workaround for CUDA9.2 and GCC7
@@ -574,7 +567,7 @@ class Operator : public OperatorBase {
       : OperatorBase(operator_def, ws), context_(operator_def.device_option()) {
     // In the constructor, we switch to the device so that the child class
     // constructors will run on that device.
-    context_.SwitchToDevice(0);
+    context_.SwitchToDevice();
   }
   explicit Operator(
       const c10::FunctionSchema& fn_schema,
@@ -583,7 +576,7 @@ class Operator : public OperatorBase {
       : OperatorBase(fn_schema, inputs, outputs) {
     // In the constructor, we switch to the device so that the child class
     // constructors will run on that device.
-    context_.SwitchToDevice(0);
+    context_.SwitchToDevice();
   }
   ~Operator() noexcept override {}
 
