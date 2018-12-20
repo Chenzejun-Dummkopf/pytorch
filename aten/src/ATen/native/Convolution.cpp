@@ -94,7 +94,6 @@ auto ConvParams::is_padding_neg() const -> bool {
   return is_non_neg;
 }
 
-
 auto ConvParams::view1d_as_2d() -> void {
   if (stride.size() == 1) {
     stride.insert(stride.begin(), 1);
@@ -137,8 +136,7 @@ auto ConvParams::use_miopen(const at::Tensor& input) const -> bool {
 auto ConvParams::use_mkldnn(const at::Tensor& input) const -> bool {
 #if AT_MKLDNN_ENABLED()
   return input.type().backend() == at::Backend::CPU &&
-         input.type().scalarType() == kFloat && // only on CPU Float Tensors
-         !transposed; // or transposed tensors
+         input.type().scalarType() == kFloat; // only on CPU Float Tensors
 #endif
   return false;
 }
@@ -368,7 +366,7 @@ at::Tensor _convolution(
           input, weight, bias,
           params.padding, params.stride, params.dilation, params.groups, params.benchmark, params.deterministic);
     }
-  } else if (params.use_mkldnn(input)) {
+  } else if (params.use_mkldnn(input) && !params.transposed) {
     AT_CHECK(input.type() == weight.type(),
              "Input type (", input.type().toString(), ") and weight type (", weight.type().toString(),
              ") should be the same");
@@ -377,6 +375,15 @@ at::Tensor _convolution(
              ") should be the same");
 
     output = at::mkldnn_convolution(input, weight, bias, params.padding, params.stride, params.dilation, params.groups);
+  } else if (params.use_mkldnn(input) && params.transposed && params.groups == 1) {
+    AT_CHECK(input.type() == weight.type(),
+             "Input type (", input.type().toString(), ") and weight type (", weight.type().toString(),
+             ") should be the same");
+    AT_CHECK(!bias.defined() || (input.type() == bias.type()),
+             "Input type (", input.type().toString(), ") and bias type (", bias.type().toString(),
+             ") should be the same");
+
+    output = at::mkldnn_convolution_transpose(input, weight, bias, params.padding, params.output_padding, params.stride, params.dilation, params.groups);
   } else {
     if (params.groups == 1) {
       output = at::_convolution_nogroup(

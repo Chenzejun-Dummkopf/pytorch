@@ -471,6 +471,10 @@ _(aten, mkldnn_convolution) \
 _(aten, mkldnn_convolution_backward) \
 _(aten, mkldnn_convolution_backward_input) \
 _(aten, mkldnn_convolution_backward_weights) \
+_(aten, mkldnn_convolution_transpose) \
+_(aten, mkldnn_convolution_transpose_backward) \
+_(aten, mkldnn_convolution_transpose_backward_input) \
+_(aten, mkldnn_convolution_transpose_backward_weights) \
 _(aten, mkldnn_relu) \
 _(aten, mkldnn_relu_) \
 _(aten, mkldnn_relu_backward) \
@@ -692,6 +696,9 @@ _(aten, unsqueeze) \
 _(aten, upsample_bilinear2d) \
 _(aten, upsample_bilinear2d_backward) \
 _(aten, upsample_bilinear2d_forward) \
+_(aten, upsample_bicubic2d) \
+_(aten, upsample_bicubic2d_backward) \
+_(aten, upsample_bicubic2d_forward) \
 _(aten, upsample_linear1d) \
 _(aten, upsample_linear1d_backward) \
 _(aten, upsample_linear1d_forward) \
