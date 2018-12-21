@@ -298,7 +298,7 @@ static inline Tensor& bmm_out_or_baddbmm_(Tensor& self_or_result, const Tensor& 
             && at::native::is_floating_point(self_or_result)
             && self_or_result.is_contiguous();
 
-  if (contraction_size * res_rows * res_cols < 400) {
+  if (contraction_size * res_rows * res_cols < 32768) {
     if (is_bmm_out) {
       AT_DISPATCH_ALL_TYPES(batch1.type(), "bmm", [&] {
           baddbmm_cpu_kernel<scalar_t, true>(self_or_result, batch1, batch2, beta, alpha);
