@@ -1385,46 +1385,17 @@ void THTensor_(catArray)(THTensor *result, THTensor **inputs, int numInputs, int
   }
   THTensor_(resize)(result, size, {});
 
-  // Check contiguity of all inputs and result
-  bool allContiguous = true;
-  for (int i = 0; i < numInputs; i++) {
-    if(!should_skip(inputs[i])) {
-      allContiguous = allContiguous && THTensor_(isContiguous)(inputs[i]);
-    }
-  }
-  allContiguous = allContiguous && THTensor_(isContiguous)(result);
-
-  // First path is for contiguous inputs along dim 0
-  // Second path for non-contiguous
-  int64_t offset;
-  if (dimension == 0 && allContiguous) {
-    scalar_t* result_data = THStorage_(data)(THTensor_getStoragePtr(result)) + result->storage_offset();
-    offset = 0;
-    for (int j = 0; j < numInputs; j++) {
-      if (!should_skip(inputs[j])) {
-        THTensor* input0 = inputs[j];
-        scalar_t* input0_data = THStorage_(data)(THTensor_getStoragePtr(input0)) + input0->storage_offset();
-        int64_t input0_size = THTensor_(nElement)(input0);
-        // C standard says you can't pass nullptrs to memcpy, even if the size is 0; ubsan checks this.
-        if (input0_size != 0) {
-          memcpy(result_data + offset, input0_data, input0_size*sizeof(scalar_t));
-        }
-        offset += input0_size;
-      }
-    }
-  } else {
-    offset = 0;
-    for (int j = 0; j < numInputs; j++) {
-      if (!should_skip(inputs[j])) {
-        int64_t dimSize = inputs[j]->size(dimension);
-        THTensor *nt = THTensor_(newWithTensor)(result);
-        THTensor_(narrow)(nt, NULL, dimension, offset, dimSize);
-        at::Tensor nt__wrap = THTensor_wrap(nt);
-        at::Tensor inputs_wrap = THTensor_wrap(inputs[j]);
-        at::_copy_same_type_(nt__wrap, inputs_wrap);
-        c10::raw::intrusive_ptr::decref(nt);
-        offset += dimSize;
-      }
+  int64_t offset = 0;
+  for (int j = 0; j < numInputs; j++) {
+    if (!should_skip(inputs[j])) {
+      int64_t dimSize = inputs[j]->size(dimension);
+      THTensor *nt = THTensor_(newWithTensor)(result);
+      THTensor_(narrow)(nt, NULL, dimension, offset, dimSize);
+      at::Tensor nt__wrap = THTensor_wrap(nt);
+      at::Tensor inputs_wrap = THTensor_wrap(inputs[j]);
+      at::_copy_same_type_(nt__wrap, inputs_wrap);
+      c10::raw::intrusive_ptr::decref(nt);
+      offset += dimSize;
     }
   }
 }
