@@ -118,7 +118,7 @@ void _copy_same_type__cpu(Tensor& self, const Tensor& src) {
           at::CPU_tensor_parallel_apply2<scalar_t, scalar_t>(
               self, src, [](scalar_t& self_val, const scalar_t& src_val) {
                 self_val = src_val;
-              });
+              }, 20000);
         });
       } else {
         serial_path = true;
