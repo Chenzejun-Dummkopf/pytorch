@@ -353,12 +353,13 @@ void TensorIterator::for_each(const loop_t& loop) {
 
 void TensorIterator::for_each(const loop2d_t& loop) {
   int64_t numel = this->numel();
+  int64_t grain_size = 20000;
   if (numel == 0) {
     return;
-  } else if (numel < internal::GRAIN_SIZE || at::get_max_threads() == 1) {
+  } else if (numel < grain_size || at::get_max_threads() == 1) {
     return serial_for_each(loop, {0, numel});
   } else {
-    at::parallel_for(0, numel, internal::GRAIN_SIZE, [&](int64_t begin, int64_t end) {
+    at::parallel_for(0, numel, grain_size, [&](int64_t begin, int64_t end) {
       serial_for_each(loop, {begin, end});
     });
   }
