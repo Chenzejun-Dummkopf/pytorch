@@ -239,7 +239,7 @@ export KMP_BLOCKTIME=1
 export KMP_AFFINITY=granularity=fine,compact,1,0
 ```
 Currently, we use the following benchmarks for tracking CNN and RNN performance, data on Xeon Skylake 8180 is also available.
-* [convnet-benchmarks](https://github.com/mingfeima/convnet-benchmarks)
+* [convnet-benchmark-py](https://github.com/mingfeima/convnet-benchmark-py)
 * [DeepSpeech2](https://github.com/mingfeima/deepspeech.pytorch)
 * [OpenNMT](https://github.com/mingfeima/OpenNMT-py)
 
