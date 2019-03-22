@@ -9,17 +9,20 @@ using namespace mkldnn;
 
 namespace at { namespace native {
 
-inline memory::desc _format_md(const memory::dims& _dims, const memory::format& _format) {
-  return memory::desc({_dims}, memory::data_type::f32, _format);
+inline memory::desc _format_md(const memory::dims& _dims, const memory::format& _format,
+  memory::data_type _data_type = memory::data_type::f32) {
+
+  return memory::desc({_dims}, _data_type, _format);
 }
 
 inline memory::desc _generic_md(const memory::dims& _dims) {
   return _format_md(_dims, memory::format::any);
 }
 
-inline memory::primitive_desc _primitive_md(const memory::dims& _dims, const memory::format& _format) {
+inline memory::primitive_desc _primitive_md(const memory::dims& _dims, const memory::format& _format,
+  memory::data_type _data_type = memory::data_type::f32) {
   auto _engine = MKLDNNEngine::Instance().get_engine(); 
-  return memory::primitive_desc(_format_md(_dims, _format), _engine);
+  return memory::primitive_desc(_format_md(_dims, _format, _data_type), _engine);
 }
 
 struct MKLDNNMemory {

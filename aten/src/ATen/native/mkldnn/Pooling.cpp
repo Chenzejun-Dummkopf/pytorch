@@ -113,11 +113,12 @@ struct PoolingParams {
   bool count_include_pad;
   bool force_exclude_padding_flag;
   bool avg;
+  bool is_forward;
 };
 
 void setPoolingParams(PoolingParams* params, const Tensor& input,
     const Tensor& output, IntList kernel, IntList stride, std::vector<int64_t> padding,
-     bool ceil_mode, bool count_include_pad, bool force_exclude_padding_flag, bool avg) {
+     bool ceil_mode, bool count_include_pad, bool force_exclude_padding_flag, bool avg, bool is_forward) {
 
   memset(params, 0, sizeof(PoolingParams));
 
@@ -136,6 +137,7 @@ void setPoolingParams(PoolingParams* params, const Tensor& input,
   params->count_include_pad = count_include_pad;
   params->force_exclude_padding_flag = force_exclude_padding_flag;
   params->avg = avg;
+  params->is_forward = is_forward;
 }
 
 struct PoolingArgs {
@@ -146,13 +148,16 @@ struct PoolingArgs {
   memory::dims _stride;
   memory::dims _paddingl;
   memory::dims _paddingr;
-  memory::format format_data;
+  memory::format plain_format_data;
+  memory::format internal_format_data;
+  memory::data_type workspace_type;
+  at::ScalarType indice_type;
 
   PoolingArgs(const Tensor& input, const Tensor& output, IntList kernel, IntList stride, std::vector<int64_t> padding,
-      bool ceil_mode, bool count_include_pad, bool force_exclude_padding_flag, bool avg) {
+      bool ceil_mode, bool count_include_pad, bool force_exclude_padding_flag, bool avg, bool is_forward) {
 
     setPoolingParams(&params, input, output, kernel, stride,
-      padding, ceil_mode, count_include_pad, force_exclude_padding_flag, avg);
+      padding, ceil_mode, count_include_pad, force_exclude_padding_flag, avg, is_forward);
 
     for (int64_t i = 0; i < input.dim(); ++i) {
       input_tz.push_back(params.input_size[i]);
@@ -166,12 +171,32 @@ struct PoolingArgs {
       _paddingr.push_back(params.paddingr[k]);
     }
 
-    format_data = (params.dim == 5) ? memory::format::ncdhw : memory::format::nchw;
+    indice_type = at::kByte;
+    workspace_type = memory::data_type::u8;
+
+    if (params.dim == 5) {
+      plain_format_data = memory::format::ncdhw;
+      internal_format_data = memory::format::nCdhw16c;
+
+      if (!avg && (kernel[0] * kernel[1] * kernel[2] > 256)) {
+        indice_type = at::kInt;
+        workspace_type = memory::data_type::s32;
+      }
+    } else {
+      plain_format_data = memory::format::nchw;
+      internal_format_data = memory::format::nChw16c;
+
+      if (!avg && (kernel[0] * kernel[1] > 256)) {
+        indice_type = at::kInt;
+        workspace_type = memory::data_type::s32;
+      }
+    }
 
   }
 
-  memory::primitive_desc input_pd() { return _primitive_md(input_tz, format_data); }
-  memory::primitive_desc output_pd() { return _primitive_md(output_tz, format_data);}
+  memory::primitive_desc input_pd() { return _primitive_md(input_tz, plain_format_data); }
+  memory::primitive_desc output_pd() { return _primitive_md(output_tz, plain_format_data);}
+  memory::primitive_desc workspace_pd() { return _primitive_md(output_tz, plain_format_data, workspace_type);}
 };
 
 pooling_forward::primitive_desc _pooling_fwd_pd(const PoolingArgs& args) {
@@ -190,8 +215,8 @@ pooling_forward::primitive_desc _pooling_fwd_pd(const PoolingArgs& args) {
     }
   }
 
-  auto input_md = _format_md(args.input_tz, args.format_data);
-  auto output_md = _format_md(args.output_tz, args.format_data);
+  auto input_md = _format_md(args.input_tz, args.params.is_forward ? args.internal_format_data : args.plain_format_data );
+  auto output_md = _generic_md(args.output_tz);
 
   auto pooling_fwd_desc = pooling_forward::desc(pooling_prop, pooling_algo, input_md, output_md,
     args._stride, args._kernel, args._paddingl, args._paddingr, padding_kind::zero);
@@ -214,8 +239,8 @@ pooling_backward::primitive_desc _pooling_bwd_pd(const PoolingArgs& args, const 
     }
   }
 
-  auto input_md = _format_md(args.input_tz, args.format_data);
-  auto output_md = _format_md(args.output_tz, args.format_data);
+  auto input_md = _generic_md(args.input_tz);
+  auto output_md = _format_md(args.output_tz, args.plain_format_data);
 
   auto pooling_bwd_desc = pooling_backward::desc(pooling_algo, input_md, output_md,
     args._stride, args._kernel, args._paddingl, args._paddingr, padding_kind::zero);
@@ -234,23 +259,27 @@ struct MKLDNNPoolingForward : MKLDNNPrimitive<pooling_forward> {
     set_null_memory(_workspace);
   }
 
-  void set(const pooling_forward::primitive_desc& pd, const memory& input, const memory& output,
-      const std::shared_ptr<memory>& workspace) {
+  void set(const pooling_forward::primitive_desc& pd, const memory& input,
+    const memory& output, const memory& workspace) {
 
     _input->set_data_handle(input.get_data_handle());
     _output->set_data_handle(output.get_data_handle());
+    _workspace->set_data_handle(workspace.get_data_handle());
 
-    if (workspace != nullptr) {
-      _workspace->set_data_handle(workspace->get_data_handle());
-      if (_prim == nullptr) {
-        _prim.reset(new pooling_forward(pd, *_input, *_output, *_workspace));
-      }
-    } else {
-      if (_prim == nullptr) {
-        _prim.reset(new pooling_forward(pd, *_input, *_output));
-      }
+    if (_prim == nullptr) {
+      _prim.reset(new pooling_forward(pd, *_input, *_output, *_workspace));
     }
   }
+
+  void set(const pooling_forward::primitive_desc& pd, const memory& input, const memory& output) {
+    _input->set_data_handle(input.get_data_handle());
+    _output->set_data_handle(output.get_data_handle());
+
+    if (_prim == nullptr) {
+      _prim.reset(new pooling_forward(pd, *_input, *_output));
+    }
+  }
+
 };
 
 struct MKLDNNPoolingBackward : MKLDNNPrimitive<pooling_backward> {
@@ -281,6 +310,7 @@ struct MKLDNNPoolingBackward : MKLDNNPrimitive<pooling_backward> {
       }
     }
   }
+
 };
 
 }  // namespace
@@ -293,38 +323,49 @@ std::tuple<Tensor, Tensor> mkldnn_pooling(const Tensor& input, IntList kernel_si
   auto output_size = pooling_output_size(input_size, kernel_size, stride, padding,
       ceil_mode, force_exclude_padding_flag);
   auto output = at::empty(output_size, input.options());
-  auto indice = at::empty(output_size, input.options().dtype(at::kInt));
 
   auto mkldnn_pad = pooling_pad_size(input_size, output_size, kernel_size, stride, padding);
 
   PoolingArgs args(input, output, kernel_size, stride, mkldnn_pad, ceil_mode,
-      count_include_pad, force_exclude_padding_flag, avg);
+      count_include_pad, force_exclude_padding_flag, avg, true);
+
+  auto indice = at::empty(output_size, input.options().dtype(args.indice_type));
   auto _pd = _pooling_fwd_pd(args);
 
   auto input_usr = MKLDNNMemory(args.input_pd(), input);
   auto output_usr = MKLDNNMemory(args.output_pd(), output);
 
+  auto input_prv = input_usr.reorder_to(_pd.src_primitive_desc());
   auto output_prv = output_usr.create(_pd.dst_primitive_desc());
 
-  std::shared_ptr<memory> workspace;
-  if (!avg) {
-    workspace.reset(new memory(_pd.workspace_primitive_desc(), indice.data_ptr()));
-  }
-
   std::shared_ptr<MKLDNNPoolingForward> pooling_fwd;
-  static thread_local PrimitiveCache<PoolingParams, MKLDNNPoolingForward> cache;
-  if (cache.find(args.params, pooling_fwd)) {
-    pooling_fwd->set(_pd, input_usr._memory, output_prv, workspace);
-  } else {
-    pooling_fwd.reset(new MKLDNNPoolingForward());
-    pooling_fwd->set(_pd, input_usr._memory, output_prv, workspace);
-    cache.insert(args.params, pooling_fwd);
-  }
 
-  MKLDNN_EXEC(pooling_fwd->get_primitive());
+  static thread_local PrimitiveCache<PoolingParams, MKLDNNPoolingForward> cache;
+  if (!avg){
+    auto workspace_usr = MKLDNNMemory(args.workspace_pd(), indice);
+    auto workspace_prv = workspace_usr.create(_pd.workspace_primitive_desc());
+
+    if (cache.find(args.params, pooling_fwd)) {
+      pooling_fwd->set(_pd, input_prv, output_prv, workspace_prv);
+    } else {
+      pooling_fwd.reset(new MKLDNNPoolingForward());
+      pooling_fwd->set(_pd, input_prv, output_prv, workspace_prv);
+      cache.insert(args.params, pooling_fwd);
+    }
+    MKLDNN_EXEC(pooling_fwd->get_primitive());
+    workspace_usr.reorder_from(workspace_prv);
+  } else {
+    if (cache.find(args.params, pooling_fwd)) {
+      pooling_fwd->set(_pd, input_prv, output_prv);
+    } else {
+      pooling_fwd.reset(new MKLDNNPoolingForward());
+      pooling_fwd->set(_pd, input_prv, output_prv);
+      cache.insert(args.params, pooling_fwd);
+    }
+     MKLDNN_EXEC(pooling_fwd->get_primitive());
+  }
 
   output_usr.reorder_from(output_prv);
-
   return std::make_tuple(output, indice);
 }
 
@@ -352,7 +393,7 @@ Tensor mkldnn_pooling_backward(const Tensor& input, const Tensor& grad_output_t,
   }
 
   PoolingArgs args(input, grad_output, kernel_size, stride, mkldnn_pad, ceil_mode,
-      count_include_pad, force_exclude_padding_flag, avg);
+      count_include_pad, force_exclude_padding_flag, avg, false);
 
   auto _fwd_pd = _pooling_fwd_pd(args);
   auto _bwd_pd = _pooling_bwd_pd(args, _fwd_pd);
@@ -376,8 +417,8 @@ Tensor mkldnn_pooling_backward(const Tensor& input, const Tensor& grad_output_t,
     pooling_bwd->set(_bwd_pd, grad_input_prv, grad_output_usr._memory, workspace);
     cache.insert(args.params, pooling_bwd);
   }
-  MKLDNN_EXEC(pooling_bwd->get_primitive());
 
+  MKLDNN_EXEC(pooling_bwd->get_primitive());
   grad_input_usr.reorder_from(grad_input_prv);
 
   return grad_input;
