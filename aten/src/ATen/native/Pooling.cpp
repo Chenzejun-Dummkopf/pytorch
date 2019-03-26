@@ -126,6 +126,7 @@ Tensor avg_pool2d(
                && (self.ndimension() == 4)
                );
 #endif
+
   if (use_mkldnn) {
 #if AT_MKLDNN_ENABLED()
     auto k = self.ndimension();
@@ -160,6 +161,7 @@ Tensor avg_pool3d(
                && (self.ndimension() == 5)
                );
 #endif
+
   if (use_mkldnn) {
 #if AT_MKLDNN_ENABLED()
     auto k = self.ndimension();
@@ -253,6 +255,7 @@ Tensor max_pool3d(
                && !is_dilated // not support dilation
                );
 #endif
+
   if (use_mkldnn) {
 #if AT_MKLDNN_ENABLED()
     auto k = self.ndimension();

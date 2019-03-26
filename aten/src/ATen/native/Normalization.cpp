@@ -287,8 +287,11 @@ Tensor batch_norm(
 
 #if AT_MKLDNN_ENABLED()
   if (use_mkldnn) {
-    return std::get<0>(at::mkldnn_batch_norm(input, weight, bias,
-      running_mean, running_var, training, momentum, eps));
+    return std::get<0>(at::mkldnn_batch_norm(
+                        input.contiguous(), weight.contiguous(), bias.contiguous(),
+                        running_mean.defined() ? running_mean.contiguous() : running_mean,
+                        running_var.defined() ? running_var.contiguous() : running_var,
+                        training, momentum, eps));
   }
 #endif
 
