@@ -753,7 +753,7 @@ void THTensor_(catArray)(THTensor *result, THTensor **inputs, int numInputs, int
   // First path is for contiguous inputs
   // Second path for non-contiguous
   int64_t offset;
-  if (allContiguous) {
+  if (allContiguous && false) {
     int64_t outer = 1, inner = 1;
 
     // Outer is the product of dimensions from the left up to (and not
